@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://cly7763.github.io/emag/sitemap.xml
