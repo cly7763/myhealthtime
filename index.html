@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <!-- Google tag (gtag.js) 필요 시 유지 -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MyHealthTime - 헬스 & 피트니스 라이프 매니저</title>
+  <meta name="description" content="운동 루틴 기록, 칼로리/영양 계산 및 건강 라이프 관리를 위한 스마트 웹 서비스" />
+
+  <!-- Google Identity Services SDK -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #1e293b;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #f43f5e;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .logo-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      background: #334155;
+      color: #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    
+    /* 사용자 프로필 / 로그인 영역 */
+    .auth-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .user-profile {
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+    .user-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 2px solid #f43f5e;
+      object-fit: cover;
+    }
+    .user-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+    .btn-logout {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-logout:hover {
+      color: #f43f5e;
+      border-color: #f43f5e;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      flex: 1;
+      width: 100%;
+    }
+    
+    /* 비로그인 시 랜딩 화면 */
+    .landing-box {
+      text-align: center;
+      padding: 60px 20px;
+      background: #1e293b;
+      border-radius: 16px;
+      border: 1px solid #334155;
+      margin-top: 20px;
+    }
+    .landing-box h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+      color: #ffffff;
+    }
+    .landing-box p {
+      font-size: 1.05rem;
+      color: #94a3b8;
+      max-width: 500px;
+      margin: 0 auto 28px auto;
+    }
+    .google-btn-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    /* 로그인 후 대시보드 화면 */
+    .dashboard {
+      display: none;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .dashboard-header {
+      margin-bottom: 28px;
+    }
+    .dashboard-header h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    .dashboard-header p {
+      color: #94a3b8;
+      font-size: 0.95rem;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .feature-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 24px;
+      transition: 0.2s;
+    }
+    .feature-card:hover {
+      border-color: #f43f5e;
+      transform: translateY(-2px);
+    }
+    .feature-card h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #f8fafc;
+    }
+    .feature-card p {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    footer {
+      border-top: 1px solid #1e293b;
+      padding: 24px 20px;
+      text-align: center;
+      color: #64748b;
+      font-size: 0.85rem;
+      background: #0b1120;
+    }
+    footer a {
+      color: #94a3b8;
+      text-decoration: none;
+    }
+    footer a:hover {
+      color: #38bdf8;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="/" class="logo">
+      <span>⏱️ MyHealthTime</span>
+      <span class="logo-badge">FIT</span>
+    </a>
+    
+    <div class="auth-container">
+      <!-- 구글 로그인 버튼 컨테이너 (헤더용 / 필요시) -->
+      <div id="google-header-btn"></div>
+      
+      <!-- 로그인 성공 시 프로필 표시 -->
+      <div class="user-profile" id="user-profile">
+        <img src="" alt="Profile" class="user-avatar" id="user-avatar" />
+        <span class="user-name" id="user-name"></span>
+        <button class="btn-logout" onclick="handleLogout()">로그아웃</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- 1. 비로그인 상태일 때 표시 -->
+    <section class="landing-box" id="landing-section">
+      <h1>나만의 헬스 플래너, MyHealthTime</h1>
+      <p>구글 계정으로 로그인하여 나만의 운동 루틴 기록, 식단 칼로리 계산 및 건강 데이터를 저장하세요.</p>
+      
+      <div class="google-btn-wrapper">
+        <div id="google-main-btn"></div>
+      </div>
+    </section>
+
+    <!-- 2. 로그인 완료 후 표시될 대시보드 -->
+    <section class="dashboard" id="dashboard-section">
+      <div class="dashboard-header">
+        <h2 id="welcome-msg">환영합니다!</h2>
+        <p>오늘의 운동 루틴과 식단을 시작해볼까요?</p>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h3>🏋️ 운동 루틴 트래커</h3>
+          <p>오늘 수행한 세트수, 무게, 반복 횟수를 체계적으로 기록하고 관리합니다.</p>
+        </div>
+        <div class="feature-card">
+          <h3>🥗 칼로리 & 매크로 계산기</h3>
+          <p>기초대사량(BMR)과 목표 체중에 따른 탄/단/지 섭취 가이드를 계산합니다.</p>
+        </div>
+        <div class="feature-card">
+          <h3>⏱️ 인터벌 / 휴식 타이머</h3>
+          <p>세트 간 휴식 시간과 타바타/HIIT 트레이닝을 위한 정밀 타이머를 제공합니다.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 MyHealthTime by DMK Studio. All rights reserved. | <a href="https://createdmk.com/">DMK Studio 홈</a></p>
+  </footer>
+
+  <script>
+    // ⚠️ 구글 클라우드 콘솔에서 발급받은 OAuth 2.0 Web Client ID를 여기에 넣으세요.
+    const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
+
+    // JWT 토큰 디코딩 함수 (Client-side)
+    function parseJwt(token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(
+          atob(base64)
+            .split('')
+            .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+            .join('')
+        );
+        return JSON.parse(jsonPayload);
+      } catch (e) {
+        console.error("JWT 파싱 실패:", e);
+        return null;
+      }
+    }
+
+    // 로그인 완료 콜백
+    function handleCredentialResponse(response) {
+      const responsePayload = parseJwt(response.credential);
+      if (responsePayload) {
+        const user = {
+          id: responsePayload.sub,
+          name: responsePayload.name,
+          email: responsePayload.email,
+          picture: responsePayload.picture
+        };
+        // 로컬스토리지에 저장하여 세션 유지
+        localStorage.setItem("mht_user", JSON.stringify(user));
+        renderAuthUI(user);
+      }
+    }
+
+    // UI 렌더링 전환
+    function renderAuthUI(user) {
+      const landingSection = document.getElementById("landing-section");
+      const dashboardSection = document.getElementById("dashboard-section");
+      const userProfile = document.getElementById("user-profile");
+      const googleMainBtn = document.getElementById("google-main-btn");
+
+      if (user) {
+        landingSection.style.display = "none";
+        dashboardSection.style.display = "block";
+        userProfile.style.display = "flex";
+        
+        document.getElementById("user-name").textContent = user.name;
+        document.getElementById("user-avatar").src = user.picture || "";
+        document.getElementById("welcome-msg").textContent = `${user.name}님, 오늘도 득근하세요! 💪`;
+      } else {
+        landingSection.style.display = "block";
+        dashboardSection.style.display = "none";
+        userProfile.style.display = "none";
+        renderGoogleButtons();
+      }
+    }
+
+    // 로그아웃 처리
+    function handleLogout() {
+      localStorage.removeItem("mht_user");
+      // 구글 자동 로그인 세션 해제
+      if (window.google && google.accounts.id) {
+        google.accounts.id.disableAutoSelect();
+      }
+      renderAuthUI(null);
+    }
+
+    // 구글 버튼 렌더링
+    function renderGoogleButtons() {
+      if (window.google && google.accounts.id) {
+        google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleCredentialResponse,
+          auto_select: false
+        });
+
+        // 랜딩 페이지 중앙 버튼
+        google.accounts.id.renderButton(
+          document.getElementById("google-main-btn"),
+          { theme: "filled_blue", size: "large", text: "continue_with", shape: "pill" }
+        );
+      }
+    }
+
+    // 초기 로딩 시 로그인 상태 복원
+    window.onload = function () {
+      const savedUser = localStorage.getItem("mht_user");
+      if (savedUser) {
+        renderAuthUI(JSON.parse(savedUser));
+      } else {
+        // SDK 로드 완료 대기 후 버튼 렌더
+        const checkGsi = setInterval(() => {
+          if (window.google && google.accounts.id) {
+            clearInterval(checkGsi);
+            renderGoogleButtons();
+          }
+        }, 100);
+      }
+    };
+  </script>
+</body>
+</html>
