@@ -47,6 +47,7 @@
       align-items: center;
       gap: 8px;
       text-decoration: none;
+      cursor: pointer;
     }
     .logo-badge {
       font-size: 0.7rem;
@@ -103,6 +104,7 @@
       width: 100%;
     }
 
+    /* 1. 비로그인 랜딩 */
     .landing-box {
       text-align: center;
       padding: 60px 20px;
@@ -128,16 +130,13 @@
       justify-content: center;
     }
 
+    /* 2. 로그인 후 메인 대시보드 (기능 카드 목록) */
     .dashboard {
       display: none;
-      animation: fadeIn 0.3s ease-in-out;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
+      animation: fadeIn 0.25s ease-in-out;
     }
     .dashboard-header {
-      margin-bottom: 24px;
+      margin-bottom: 28px;
     }
     .dashboard-header h2 {
       font-size: 1.6rem;
@@ -148,8 +147,78 @@
       color: #94a3b8;
       font-size: 0.95rem;
     }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .feature-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 24px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .feature-card:hover {
+      border-color: #f43f5e;
+      transform: translateY(-4px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+    .feature-card h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #f8fafc;
+    }
+    .feature-card p {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+    .feature-card .card-action {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #f43f5e;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
 
-    /* 루틴 메인 카드 */
+    /* 3. 운동 루틴 관리 서브 뷰 */
+    .view-routine {
+      display: none;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+    .view-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .btn-back {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: 0.2s;
+    }
+    .btn-back:hover {
+      color: #ffffff;
+      border-color: #64748b;
+    }
+
     .routine-card {
       background: #1e293b;
       border: 1px solid #334155;
@@ -167,30 +236,27 @@
       gap: 8px;
     }
 
-    /* 입력 폼 그리드 */
+    /* 입력 폼 그리드 및 버튼 레이아웃 수정 */
     .routine-form {
-      display: grid;
-      grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr auto;
-      gap: 10px;
-      align-items: end;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-end;
       margin-bottom: 24px;
       background: #0f172a;
       padding: 16px;
       border-radius: 10px;
       border: 1px solid #334155;
     }
-    @media (max-width: 768px) {
-      .routine-form {
-        grid-template-columns: 1fr 1fr;
-      }
-      .routine-form .btn-add {
-        grid-column: span 2;
-      }
-    }
     .form-group {
       display: flex;
       flex-direction: column;
       gap: 6px;
+      flex: 1 1 120px;
+      min-width: 100px;
+    }
+    .form-group.name-group {
+      flex: 2 1 180px;
     }
     .form-group label {
       font-size: 0.75rem;
@@ -198,35 +264,40 @@
       color: #94a3b8;
     }
     .form-group input, .form-group select {
+      width: 100%;
+      height: 40px;
       background: #1e293b;
       border: 1px solid #334155;
       border-radius: 6px;
-      padding: 8px 12px;
+      padding: 0 12px;
       color: #f8fafc;
       font-size: 0.9rem;
       outline: none;
-      transition: 0.2s;
+      transition: border-color 0.2s;
     }
     .form-group input:focus, .form-group select:focus {
       border-color: #f43f5e;
     }
     .btn-add {
+      height: 40px;
+      min-width: 72px;
       background: #f43f5e;
       color: white;
       border: none;
       border-radius: 6px;
-      padding: 9px 18px;
+      padding: 0 16px;
       font-size: 0.9rem;
       font-weight: 700;
       cursor: pointer;
       transition: 0.2s;
-      height: 38px;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     .btn-add:hover {
       background: #e11d48;
     }
 
-    /* 루틴 목록 테이블 */
+    /* 테이블 */
     .table-container {
       overflow-x: auto;
     }
@@ -281,6 +352,11 @@
       font-size: 0.9rem;
     }
 
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     footer {
       border-top: 1px solid #1e293b;
       padding: 24px 20px;
@@ -301,10 +377,10 @@
 <body>
 
   <header>
-    <a href="/" class="logo">
+    <div class="logo" onclick="navigateTo('dashboard')">
       <span>⏱️ MyHealthTime</span>
       <span class="logo-badge">FIT</span>
-    </a>
+    </div>
     
     <div class="auth-container">
       <div class="user-profile" id="user-profile">
@@ -316,6 +392,7 @@
   </header>
 
   <main class="container">
+    <!-- 1. 비로그인 화면 -->
     <section class="landing-box" id="landing-section">
       <h1>나만의 헬스 플래너, MyHealthTime</h1>
       <p>구글 로그인 후 실시간으로 운동 루틴을 클라우드에 저장하고 관리하세요.</p>
@@ -324,18 +401,60 @@
       </div>
     </section>
 
+    <!-- 2. 로그인 후 기본 대시보드 화면 (카드 선택) -->
     <section class="dashboard" id="dashboard-section">
       <div class="dashboard-header">
         <h2 id="welcome-msg">환영합니다!</h2>
-        <p>오늘의 운동 루틴을 등록하고 기록을 남겨보세요.</p>
+        <p>원하는 메뉴를 선택하여 운동 관리를 시작해보세요.</p>
       </div>
 
-      <!-- 운동 루틴 관리 카드 -->
+      <div class="feature-grid">
+        <!-- 루틴 트래커 카드 클릭 시 이동 -->
+        <div class="feature-card" onclick="navigateTo('routine')">
+          <div>
+            <h3>🏋️ 운동 루틴 트래커</h3>
+            <p>오늘 수행할 운동 종목과 부위, 목표 무게/세트를 등록하고 체계적으로 관리합니다.</p>
+          </div>
+          <div class="card-action">
+            <span>루틴 설정 및 관리하기</span>
+            <span>→</span>
+          </div>
+        </div>
+
+        <!-- 추후 확장용 카드들 -->
+        <div class="feature-card" style="opacity: 0.6; cursor: default;">
+          <div>
+            <h3>🥗 칼로리 & 매크로 계산기</h3>
+            <p>기초대사량(BMR)과 목표 체중에 따른 탄/단/지 일일 섭취 가이드를 계산합니다. (준비 중)</p>
+          </div>
+          <div class="card-action" style="color: #64748b;">
+            <span>오픈 예정</span>
+          </div>
+        </div>
+
+        <div class="feature-card" style="opacity: 0.6; cursor: default;">
+          <div>
+            <h3>⏱️ 인터벌 / 세트 타이머</h3>
+            <p>세트 간 휴식 시간 알림과 타바타/HIIT 운동을 위한 정밀 타이머를 제공합니다. (준비 중)</p>
+          </div>
+          <div class="card-action" style="color: #64748b;">
+            <span>오픈 예정</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 운동 루틴 관리 세부 화면 -->
+    <section class="view-routine" id="routine-section">
+      <div class="view-header">
+        <button class="btn-back" onclick="navigateTo('dashboard')">← 대시보드로 돌아가기</button>
+      </div>
+
       <div class="routine-card">
         <h3>🏋️ 내 운동 루틴 설정</h3>
 
         <form class="routine-form" id="routine-form" onsubmit="handleAddRoutine(event)">
-          <div class="form-group">
+          <div class="form-group name-group">
             <label>운동 종목</label>
             <input type="text" id="exercise-name" placeholder="예: 벤치프레스" required />
           </div>
@@ -379,7 +498,7 @@
               </tr>
             </thead>
             <tbody id="routine-list">
-              <!-- 루틴 목록이 여기에 렌더링됩니다 -->
+              <!-- Supabase 데이터 렌더링 영역 -->
             </tbody>
           </table>
           <div id="empty-state" class="empty-msg">등록된 운동 루틴이 없습니다. 상단에서 추가해보세요!</div>
@@ -393,16 +512,14 @@
   </footer>
 
   <script>
-    // ⚙️ 1. 설정값 입력 (Supabase 및 Google Client ID)
+    // ⚙️ Supabase 및 Google Client ID 설정값
     const SUPABASE_URL = "https://jlibqpijpmpqrehewoxn.supabase.co/rest/v1";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsaWJxcGlqcG1wcXJlaGV3b3huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2OTcwNjYsImV4cCI6MjEwMzI3MzA2Nn0.8an1CTT1QFmedUeItbGN7XgMrepEwy3200HGnoXTUxs";
     const GOOGLE_CLIENT_ID = "784528740097-v1eob22oaigvrhrbgjmliag9pr5urse8.apps.googleusercontent.com";
 
-    // Supabase 클라이언트 초기화
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let currentUser = null;
 
-    // JWT 파싱
     function parseJwt(token) {
       try {
         const base64Url = token.split('.')[1];
@@ -419,7 +536,27 @@
       }
     }
 
-    // Google 로그인 응답 콜백
+    // 화면 전환 라우팅 함수
+    function navigateTo(view) {
+      if (!currentUser) {
+        document.getElementById("landing-section").style.display = "block";
+        document.getElementById("dashboard-section").style.display = "none";
+        document.getElementById("routine-section").style.display = "none";
+        return;
+      }
+
+      document.getElementById("landing-section").style.display = "none";
+      if (view === "routine") {
+        document.getElementById("dashboard-section").style.display = "none";
+        document.getElementById("routine-section").style.display = "block";
+        loadRoutines();
+      } else {
+        // default: dashboard
+        document.getElementById("dashboard-section").style.display = "block";
+        document.getElementById("routine-section").style.display = "none";
+      }
+    }
+
     function handleCredentialResponse(response) {
       const payload = parseJwt(response.credential);
       if (payload) {
@@ -431,33 +568,23 @@
         };
         localStorage.setItem("mht_user", JSON.stringify(currentUser));
         renderAuthUI(currentUser);
-        loadRoutines();
+        navigateTo('dashboard');
       }
     }
 
-    // UI 상태 전환
     function renderAuthUI(user) {
-      const landingSection = document.getElementById("landing-section");
-      const dashboardSection = document.getElementById("dashboard-section");
       const userProfile = document.getElementById("user-profile");
-
       if (user) {
-        landingSection.style.display = "none";
-        dashboardSection.style.display = "block";
         userProfile.style.display = "flex";
-        
         document.getElementById("user-name").textContent = user.name;
         document.getElementById("user-avatar").src = user.picture || "";
-        document.getElementById("welcome-msg").textContent = `${user.name}님의 운동 루틴`;
+        document.getElementById("welcome-msg").textContent = `${user.name}님, 오늘도 득근하세요! 💪`;
       } else {
-        landingSection.style.display = "block";
-        dashboardSection.style.display = "none";
         userProfile.style.display = "none";
         renderGoogleButtons();
       }
     }
 
-    // 로그아웃
     function handleLogout() {
       localStorage.removeItem("mht_user");
       currentUser = null;
@@ -465,9 +592,9 @@
         google.accounts.id.disableAutoSelect();
       }
       renderAuthUI(null);
+      navigateTo(null);
     }
 
-    // Supabase: 루틴 목록 불러오기
     async function loadRoutines() {
       if (!currentUser) return;
 
@@ -485,7 +612,6 @@
       renderRoutineList(data || []);
     }
 
-    // Supabase: 루틴 추가
     async function handleAddRoutine(e) {
       e.preventDefault();
       if (!currentUser) return;
@@ -498,7 +624,7 @@
 
       const btnSubmit = document.getElementById("btn-submit");
       btnSubmit.disabled = true;
-      btnSubmit.textContent = "저장 중...";
+      btnSubmit.textContent = "...";
 
       const { error } = await supabaseClient
         .from('workout_routines')
@@ -526,7 +652,6 @@
       loadRoutines();
     }
 
-    // Supabase: 루틴 삭제
     async function handleDeleteRoutine(id) {
       if (!confirm("이 루틴을 삭제하시겠습니까?")) return;
 
@@ -545,7 +670,6 @@
       loadRoutines();
     }
 
-    // 루틴 테이블 렌더링
     function renderRoutineList(routines) {
       const tbody = document.getElementById("routine-list");
       const emptyState = document.getElementById("empty-state");
@@ -573,7 +697,6 @@
       });
     }
 
-    // 구글 버튼 렌더
     function renderGoogleButtons() {
       if (window.google && google.accounts.id) {
         google.accounts.id.initialize({
@@ -589,14 +712,14 @@
       }
     }
 
-    // 초기화
     window.onload = function () {
       const savedUser = localStorage.getItem("mht_user");
       if (savedUser) {
         currentUser = JSON.parse(savedUser);
         renderAuthUI(currentUser);
-        loadRoutines();
+        navigateTo('dashboard');
       } else {
+        navigateTo(null);
         const checkGsi = setInterval(() => {
           if (window.google && google.accounts.id) {
             clearInterval(checkGsi);
