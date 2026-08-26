@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <!-- Google tag (gtag.js) 필요 시 유지 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MyHealthTime - 헬스 & 피트니스 라이프 매니저</title>
-  <meta name="description" content="운동 루틴 기록, 칼로리/영양 계산 및 건강 라이프 관리를 위한 스마트 웹 서비스" />
+  <title>MyHealthTime - 헬스 & 피트니스 매니저</title>
+  <meta name="description" content="운동 루틴 기록 및 건강 라이프 관리를 위한 스마트 웹 서비스" />
 
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Google Identity Services SDK -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
@@ -55,8 +56,7 @@
       padding: 2px 6px;
       border-radius: 4px;
     }
-    
-    /* 사용자 프로필 / 로그인 영역 */
+
     .auth-container {
       display: flex;
       align-items: center;
@@ -96,14 +96,13 @@
     }
 
     .container {
-      max-width: 1000px;
+      max-width: 960px;
       margin: 0 auto;
       padding: 40px 20px;
       flex: 1;
       width: 100%;
     }
-    
-    /* 비로그인 시 랜딩 화면 */
+
     .landing-box {
       text-align: center;
       padding: 60px 20px;
@@ -127,10 +126,8 @@
     .google-btn-wrapper {
       display: flex;
       justify-content: center;
-      margin-top: 10px;
     }
 
-    /* 로그인 후 대시보드 화면 */
     .dashboard {
       display: none;
       animation: fadeIn 0.3s ease-in-out;
@@ -140,7 +137,7 @@
       to { opacity: 1; transform: translateY(0); }
     }
     .dashboard-header {
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
     .dashboard-header h2 {
       font-size: 1.6rem;
@@ -152,32 +149,136 @@
       font-size: 0.95rem;
     }
 
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-    }
-    .feature-card {
+    /* 루틴 메인 카드 */
+    .routine-card {
       background: #1e293b;
       border: 1px solid #334155;
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 24px;
+      margin-bottom: 24px;
+    }
+    .routine-card h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* 입력 폼 그리드 */
+    .routine-form {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr auto;
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 24px;
+      background: #0f172a;
+      padding: 16px;
+      border-radius: 10px;
+      border: 1px solid #334155;
+    }
+    @media (max-width: 768px) {
+      .routine-form {
+        grid-template-columns: 1fr 1fr;
+      }
+      .routine-form .btn-add {
+        grid-column: span 2;
+      }
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-group label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #94a3b8;
+    }
+    .form-group input, .form-group select {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: #f8fafc;
+      font-size: 0.9rem;
+      outline: none;
       transition: 0.2s;
     }
-    .feature-card:hover {
+    .form-group input:focus, .form-group select:focus {
       border-color: #f43f5e;
-      transform: translateY(-2px);
     }
-    .feature-card h3 {
-      font-size: 1.15rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-      color: #f8fafc;
-    }
-    .feature-card p {
+    .btn-add {
+      background: #f43f5e;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 9px 18px;
       font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s;
+      height: 38px;
+    }
+    .btn-add:hover {
+      background: #e11d48;
+    }
+
+    /* 루틴 목록 테이블 */
+    .table-container {
+      overflow-x: auto;
+    }
+    .routine-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .routine-table th {
+      padding: 10px 14px;
       color: #94a3b8;
-      line-height: 1.5;
+      border-bottom: 1px solid #334155;
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+    .routine-table td {
+      padding: 14px;
+      border-bottom: 1px solid #1e293b;
+      color: #f1f5f9;
+    }
+    .routine-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: #334155;
+      color: #38bdf8;
+    }
+    .btn-delete {
+      background: transparent;
+      border: 1px solid #475569;
+      color: #94a3b8;
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-delete:hover {
+      color: #f43f5e;
+      border-color: #f43f5e;
+    }
+    .empty-msg {
+      text-align: center;
+      padding: 30px;
+      color: #64748b;
+      font-size: 0.9rem;
     }
 
     footer {
@@ -206,10 +307,6 @@
     </a>
     
     <div class="auth-container">
-      <!-- 구글 로그인 버튼 컨테이너 (헤더용 / 필요시) -->
-      <div id="google-header-btn"></div>
-      
-      <!-- 로그인 성공 시 프로필 표시 -->
       <div class="user-profile" id="user-profile">
         <img src="" alt="Profile" class="user-avatar" id="user-avatar" />
         <span class="user-name" id="user-name"></span>
@@ -219,35 +316,73 @@
   </header>
 
   <main class="container">
-    <!-- 1. 비로그인 상태일 때 표시 -->
     <section class="landing-box" id="landing-section">
       <h1>나만의 헬스 플래너, MyHealthTime</h1>
-      <p>구글 계정으로 로그인하여 나만의 운동 루틴 기록, 식단 칼로리 계산 및 건강 데이터를 저장하세요.</p>
-      
+      <p>구글 로그인 후 실시간으로 운동 루틴을 클라우드에 저장하고 관리하세요.</p>
       <div class="google-btn-wrapper">
         <div id="google-main-btn"></div>
       </div>
     </section>
 
-    <!-- 2. 로그인 완료 후 표시될 대시보드 -->
     <section class="dashboard" id="dashboard-section">
       <div class="dashboard-header">
         <h2 id="welcome-msg">환영합니다!</h2>
-        <p>오늘의 운동 루틴과 식단을 시작해볼까요?</p>
+        <p>오늘의 운동 루틴을 등록하고 기록을 남겨보세요.</p>
       </div>
 
-      <div class="feature-grid">
-        <div class="feature-card">
-          <h3>🏋️ 운동 루틴 트래커</h3>
-          <p>오늘 수행한 세트수, 무게, 반복 횟수를 체계적으로 기록하고 관리합니다.</p>
-        </div>
-        <div class="feature-card">
-          <h3>🥗 칼로리 & 매크로 계산기</h3>
-          <p>기초대사량(BMR)과 목표 체중에 따른 탄/단/지 섭취 가이드를 계산합니다.</p>
-        </div>
-        <div class="feature-card">
-          <h3>⏱️ 인터벌 / 휴식 타이머</h3>
-          <p>세트 간 휴식 시간과 타바타/HIIT 트레이닝을 위한 정밀 타이머를 제공합니다.</p>
+      <!-- 운동 루틴 관리 카드 -->
+      <div class="routine-card">
+        <h3>🏋️ 내 운동 루틴 설정</h3>
+
+        <form class="routine-form" id="routine-form" onsubmit="handleAddRoutine(event)">
+          <div class="form-group">
+            <label>운동 종목</label>
+            <input type="text" id="exercise-name" placeholder="예: 벤치프레스" required />
+          </div>
+          <div class="form-group">
+            <label>운동 부위</label>
+            <select id="target-body">
+              <option value="가슴">가슴</option>
+              <option value="등">등</option>
+              <option value="하체">하체</option>
+              <option value="어깨">어깨</option>
+              <option value="팔">팔</option>
+              <option value="복근/코어">복근/코어</option>
+              <option value="유산소">유산소</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>무게 (kg)</label>
+            <input type="number" id="weight" step="0.5" placeholder="0" min="0" required />
+          </div>
+          <div class="form-group">
+            <label>반복 (회)</label>
+            <input type="number" id="reps" placeholder="10" min="1" required />
+          </div>
+          <div class="form-group">
+            <label>세트</label>
+            <input type="number" id="sets" placeholder="4" min="1" required />
+          </div>
+          <button type="submit" class="btn-add" id="btn-submit">추가</button>
+        </form>
+
+        <div class="table-container">
+          <table class="routine-table">
+            <thead>
+              <tr>
+                <th>부위</th>
+                <th>운동 종목</th>
+                <th>무게</th>
+                <th>횟수</th>
+                <th>세트</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="routine-list">
+              <!-- 루틴 목록이 여기에 렌더링됩니다 -->
+            </tbody>
+          </table>
+          <div id="empty-state" class="empty-msg">등록된 운동 루틴이 없습니다. 상단에서 추가해보세요!</div>
         </div>
       </div>
     </section>
@@ -258,10 +393,16 @@
   </footer>
 
   <script>
-    // ⚠️ 구글 클라우드 콘솔에서 발급받은 OAuth 2.0 Web Client ID를 여기에 넣으세요.
+    // ⚙️ 1. 설정값 입력 (Supabase 및 Google Client ID)
+    const SUPABASE_URL = "https://jlibqpijpmpqrehewoxn.supabase.co/rest/v1";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsaWJxcGlqcG1wcXJlaGV3b3huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2OTcwNjYsImV4cCI6MjEwMzI3MzA2Nn0.8an1CTT1QFmedUeItbGN7XgMrepEwy3200HGnoXTUxs";
     const GOOGLE_CLIENT_ID = "784528740097-v1eob22oaigvrhrbgjmliag9pr5urse8.apps.googleusercontent.com";
 
-    // JWT 토큰 디코딩 함수 (Client-side)
+    // Supabase 클라이언트 초기화
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let currentUser = null;
+
+    // JWT 파싱
     function parseJwt(token) {
       try {
         const base64Url = token.split('.')[1];
@@ -274,33 +415,31 @@
         );
         return JSON.parse(jsonPayload);
       } catch (e) {
-        console.error("JWT 파싱 실패:", e);
         return null;
       }
     }
 
-    // 로그인 완료 콜백
+    // Google 로그인 응답 콜백
     function handleCredentialResponse(response) {
-      const responsePayload = parseJwt(response.credential);
-      if (responsePayload) {
-        const user = {
-          id: responsePayload.sub,
-          name: responsePayload.name,
-          email: responsePayload.email,
-          picture: responsePayload.picture
+      const payload = parseJwt(response.credential);
+      if (payload) {
+        currentUser = {
+          id: payload.sub,
+          name: payload.name,
+          email: payload.email,
+          picture: payload.picture
         };
-        // 로컬스토리지에 저장하여 세션 유지
-        localStorage.setItem("mht_user", JSON.stringify(user));
-        renderAuthUI(user);
+        localStorage.setItem("mht_user", JSON.stringify(currentUser));
+        renderAuthUI(currentUser);
+        loadRoutines();
       }
     }
 
-    // UI 렌더링 전환
+    // UI 상태 전환
     function renderAuthUI(user) {
       const landingSection = document.getElementById("landing-section");
       const dashboardSection = document.getElementById("dashboard-section");
       const userProfile = document.getElementById("user-profile");
-      const googleMainBtn = document.getElementById("google-main-btn");
 
       if (user) {
         landingSection.style.display = "none";
@@ -309,7 +448,7 @@
         
         document.getElementById("user-name").textContent = user.name;
         document.getElementById("user-avatar").src = user.picture || "";
-        document.getElementById("welcome-msg").textContent = `${user.name}님, 오늘도 득근하세요! 💪`;
+        document.getElementById("welcome-msg").textContent = `${user.name}님의 운동 루틴`;
       } else {
         landingSection.style.display = "block";
         dashboardSection.style.display = "none";
@@ -318,17 +457,123 @@
       }
     }
 
-    // 로그아웃 처리
+    // 로그아웃
     function handleLogout() {
       localStorage.removeItem("mht_user");
-      // 구글 자동 로그인 세션 해제
+      currentUser = null;
       if (window.google && google.accounts.id) {
         google.accounts.id.disableAutoSelect();
       }
       renderAuthUI(null);
     }
 
-    // 구글 버튼 렌더링
+    // Supabase: 루틴 목록 불러오기
+    async function loadRoutines() {
+      if (!currentUser) return;
+
+      const { data, error } = await supabaseClient
+        .from('workout_routines')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error("루틴 불러오기 실패:", error);
+        return;
+      }
+
+      renderRoutineList(data || []);
+    }
+
+    // Supabase: 루틴 추가
+    async function handleAddRoutine(e) {
+      e.preventDefault();
+      if (!currentUser) return;
+
+      const exerciseName = document.getElementById("exercise-name").value.trim();
+      const targetBody = document.getElementById("target-body").value;
+      const weight = parseFloat(document.getElementById("weight").value) || 0;
+      const reps = parseInt(document.getElementById("reps").value, 10) || 0;
+      const sets = parseInt(document.getElementById("sets").value, 10) || 0;
+
+      const btnSubmit = document.getElementById("btn-submit");
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = "저장 중...";
+
+      const { error } = await supabaseClient
+        .from('workout_routines')
+        .insert([
+          {
+            user_id: currentUser.id,
+            exercise_name: exerciseName,
+            target_body: targetBody,
+            weight: weight,
+            reps: reps,
+            sets: sets
+          }
+        ]);
+
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = "추가";
+
+      if (error) {
+        alert("루틴 저장에 실패했습니다.");
+        console.error(error);
+        return;
+      }
+
+      document.getElementById("routine-form").reset();
+      loadRoutines();
+    }
+
+    // Supabase: 루틴 삭제
+    async function handleDeleteRoutine(id) {
+      if (!confirm("이 루틴을 삭제하시겠습니까?")) return;
+
+      const { error } = await supabaseClient
+        .from('workout_routines')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', currentUser.id);
+
+      if (error) {
+        alert("삭제에 실패했습니다.");
+        console.error(error);
+        return;
+      }
+
+      loadRoutines();
+    }
+
+    // 루틴 테이블 렌더링
+    function renderRoutineList(routines) {
+      const tbody = document.getElementById("routine-list");
+      const emptyState = document.getElementById("empty-state");
+      tbody.innerHTML = "";
+
+      if (routines.length === 0) {
+        emptyState.style.display = "block";
+        return;
+      }
+      emptyState.style.display = "none";
+
+      routines.forEach(item => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><span class="badge">${item.target_body}</span></td>
+          <td><strong>${item.exercise_name}</strong></td>
+          <td>${item.weight} kg</td>
+          <td>${item.reps} 회</td>
+          <td>${item.sets} 세트</td>
+          <td>
+            <button class="btn-delete" onclick="handleDeleteRoutine('${item.id}')">삭제</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // 구글 버튼 렌더
     function renderGoogleButtons() {
       if (window.google && google.accounts.id) {
         google.accounts.id.initialize({
@@ -337,7 +582,6 @@
           auto_select: false
         });
 
-        // 랜딩 페이지 중앙 버튼
         google.accounts.id.renderButton(
           document.getElementById("google-main-btn"),
           { theme: "filled_blue", size: "large", text: "continue_with", shape: "pill" }
@@ -345,13 +589,14 @@
       }
     }
 
-    // 초기 로딩 시 로그인 상태 복원
+    // 초기화
     window.onload = function () {
       const savedUser = localStorage.getItem("mht_user");
       if (savedUser) {
-        renderAuthUI(JSON.parse(savedUser));
+        currentUser = JSON.parse(savedUser);
+        renderAuthUI(currentUser);
+        loadRoutines();
       } else {
-        // SDK 로드 완료 대기 후 버튼 렌더
         const checkGsi = setInterval(() => {
           if (window.google && google.accounts.id) {
             clearInterval(checkGsi);
