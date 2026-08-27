@@ -192,7 +192,7 @@
       gap: 4px;
     }
 
-    /* 공통 뷰 헤더 & 카드 */
+    /* 3. 공통 뷰 */
     .view-section {
       display: none;
       animation: fadeIn 0.2s ease-in-out;
@@ -238,7 +238,7 @@
       gap: 6px;
     }
 
-    /* 루틴 입력 폼 */
+    /* 루틴 폼 */
     .routine-form {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -292,7 +292,7 @@
       background: #e11d48;
     }
 
-    /* 카드형 리스트 공통 */
+    /* 카드형 리스트 */
     .list-wrapper {
       display: flex;
       flex-direction: column;
@@ -307,6 +307,9 @@
       justify-content: space-between;
       align-items: center;
       transition: border-color 0.2s;
+    }
+    .custom-item-card:hover {
+      border-color: #475569;
     }
     .item-info-left {
       display: flex;
@@ -368,7 +371,7 @@
       background: #0284c7;
     }
 
-    /* 칼로리 계산기 전용 스타일 */
+    /* 칼로리 계산기 전용 */
     .macro-summary {
       background: #0f172a;
       border: 1px solid #334155;
@@ -398,7 +401,7 @@
     .search-box {
       display: flex;
       gap: 8px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
     .search-input {
       flex: 1;
@@ -413,6 +416,38 @@
     }
     .search-input:focus {
       border-color: #38bdf8;
+    }
+
+    /* 검색 페이지네이션 바 */
+    .pagination-bar {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .btn-page {
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-page:hover:not(:disabled) {
+      color: #ffffff;
+      border-color: #38bdf8;
+    }
+    .btn-page:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .page-indicator {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      font-weight: 600;
     }
 
     .empty-msg {
@@ -533,7 +568,7 @@
       </div>
     </section>
 
-    <!-- 3. 운동 루틴 관리 세부 화면 -->
+    <!-- 3. 운동 루틴 세부 화면 -->
     <section class="view-section" id="routine-section">
       <div class="view-header">
         <button class="btn-back" onclick="navigateTo('dashboard')">← 대시보드로 돌아가기</button>
@@ -585,7 +620,7 @@
         <button class="btn-back" onclick="navigateTo('dashboard')">← 대시보드로 돌아가기</button>
       </div>
 
-      <!-- 일일 영양 합계 카드 -->
+      <!-- 일일 영양 합계 -->
       <div class="macro-summary">
         <div class="macro-item">
           <span class="macro-label">총 열량</span>
@@ -605,18 +640,25 @@
         </div>
       </div>
 
-      <!-- 식약처 식품 검색 영역 -->
+      <!-- 식품 검색창 -->
       <div class="app-card">
         <h3>🔍 식약처 식품 영양성분 검색</h3>
         <div class="search-box">
-          <input type="text" id="food-search-input" class="search-input" placeholder="음식명 입력 (예: 닭가슴살, 바나나)" onkeyup="if(window.event.keyCode==13){searchFoodNutrients()}" />
-          <button class="btn-primary" style="padding: 0 16px;" id="btn-food-search" onclick="searchFoodNutrients()">검색</button>
+          <input type="text" id="food-search-input" class="search-input" placeholder="음식명 입력 (예: 바나나, 닭가슴살, 김치)" onkeyup="if(window.event.keyCode==13){searchFoodNutrients(1)}" />
+          <button class="btn-primary" style="padding: 0 16px;" id="btn-food-search" onclick="searchFoodNutrients(1)">검색</button>
         </div>
 
         <div class="list-wrapper" id="food-search-results"></div>
+
+        <!-- 검색 페이지네이션 바 -->
+        <div class="pagination-bar" id="search-pagination">
+          <button class="btn-page" id="btn-prev-page" onclick="changeSearchPage(-1)">← 이전 페이지</button>
+          <span class="page-indicator" id="current-page-text">1 페이지</span>
+          <button class="btn-page" id="btn-next-page" onclick="changeSearchPage(1)">다음 페이지 →</button>
+        </div>
       </div>
 
-      <!-- 오늘 기록한 식단 목록 -->
+      <!-- 식단 목록 -->
       <div class="app-card">
         <h3>🍽️ 오늘 먹은 식단 목록</h3>
         <div class="list-wrapper" id="daily-diet-list"></div>
@@ -633,13 +675,14 @@
     const SUPABASE_URL = "https://jlibqpijpmpqrehewoxn.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsaWJxcGlqcG1wcXJlaGV3b3huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2OTcwNjYsImV4cCI6MjEwMzI3MzA2Nn0.8an1CTT1QFmedUeItbGN7XgMrepEwy3200HGnoXTUxs";
     const GOOGLE_CLIENT_ID = "784528740097-v1eob22oaigvrhrbgjmliag9pr5urse8.apps.googleusercontent.com";
-    
-    // 식약처 발급 일반 인증키
-    const FOOD_API_KEY = "IpJLarDm6zKK9HgZH%2Fh4yvfd4SSNv8MpthKqq7aNxnS6G5NuPBq6vsSKyZpvkD756lfb8tV1%2BLzNM%2Fy2ElZ2ew%3D%3D";
+    const FOOD_API_KEY_DECODED = "IpJLarDm6zKK9HgZH/h4yvfd4SSNv8MpthKqq7aNxnS6G5NuPBq6vsSKyZpvkD756lfb8tV1+LzNM/y2ElZ2ew==";
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let currentUser = null;
     let dailyDietItems = [];
+
+    let currentSearchPage = 1;
+    let currentSearchQuery = "";
 
     function parseJwt(token) {
       try {
@@ -718,7 +761,7 @@
       navigateTo(null);
     }
 
-    // --- 운동 루틴 관련 ---
+    // --- 운동 루틴 ---
     async function loadRoutines() {
       if (!currentUser) return;
 
@@ -824,38 +867,83 @@
       });
     }
 
-    // --- 식약처 식품 영양 API & 칼로리 계산기 관련 ---
-    async function searchFoodNutrients() {
+    // --- 식약처 식품 영양 API (정확도 우선 정렬 + 페이지네이션) ---
+    async function searchFoodNutrients(page = 1) {
       const query = document.getElementById("food-search-input").value.trim();
       const resultsContainer = document.getElementById("food-search-results");
       const btnSearch = document.getElementById("btn-food-search");
+      const paginationBar = document.getElementById("search-pagination");
 
       if (!query) {
         alert("검색할 식품명을 입력해주세요.");
         return;
       }
 
+      currentSearchQuery = query;
+      currentSearchPage = page;
+
       btnSearch.disabled = true;
       btnSearch.textContent = "...";
       resultsContainer.innerHTML = '<div class="empty-msg">식품 영양성분 데이터를 불러오는 중...</div>';
+      paginationBar.style.display = "none";
 
-      // 식약처 FoodNtrCpntDbInfo02 엔드포인트
-      const targetApi = `https://apis.data.go.kr/1471000/FoodNtrCpntDbInfo02/getFoodNtrCpntDbInq02?serviceKey=${FOOD_API_KEY}&FOOD_NM_KR=${encodeURIComponent(query)}&pageNo=1&numOfRows=10&type=json`;
-      // 브라우저 CORS 우회용 프록시
-      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetApi)}`;
+      const numOfRows = 30;
+      const targetApi = `https://apis.data.go.kr/1471000/FoodNtrCpntDbInfo02/getFoodNtrCpntDbInq02?serviceKey=${encodeURIComponent(FOOD_API_KEY_DECODED)}&FOOD_NM_KR=${encodeURIComponent(query)}&pageNo=${page}&numOfRows=${numOfRows}&type=json`;
+      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetApi)}`;
 
       try {
         const response = await fetch(proxyUrl);
-        const proxyData = await response.json();
-        const data = JSON.parse(proxyData.contents);
+        const text = await response.text();
+        
+        let items = [];
+        try {
+          const jsonData = JSON.parse(text);
+          items = jsonData?.body?.items || [];
+        } catch (e) {
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(text, "text/xml");
+          const xmlItems = xmlDoc.getElementsByTagName("item");
+          for (let i = 0; i < xmlItems.length; i++) {
+            const item = xmlItems[i];
+            items.push({
+              FOOD_NM_KR: item.getElementsByTagName("FOOD_NM_KR")[0]?.textContent || "",
+              SERVING_SIZE: item.getElementsByTagName("SERVING_SIZE")[0]?.textContent || "",
+              AMT_NUM1: item.getElementsByTagName("AMT_NUM1")[0]?.textContent || 0,
+              AMT_NUM6: item.getElementsByTagName("AMT_NUM6")[0]?.textContent || 0,
+              AMT_NUM3: item.getElementsByTagName("AMT_NUM3")[0]?.textContent || 0,
+              AMT_NUM4: item.getElementsByTagName("AMT_NUM4")[0]?.textContent || 0
+            });
+          }
+        }
 
-        const items = data?.body?.items || [];
         resultsContainer.innerHTML = "";
 
         if (items.length === 0) {
-          resultsContainer.innerHTML = '<div class="empty-msg">검색 결과가 없습니다. 다른 검색어를 입력해보세요.</div>';
+          resultsContainer.innerHTML = `<div class="empty-msg">${page > 1 ? '더 이상 검색 결과가 없습니다.' : '검색 결과가 없습니다.'}</div>`;
+          if (page > 1) {
+            paginationBar.style.display = "flex";
+            document.getElementById("btn-next-page").disabled = true;
+            document.getElementById("btn-prev-page").disabled = false;
+            document.getElementById("current-page-text").textContent = `${page} 페이지`;
+          }
           return;
         }
+
+        // 검색어와 일치/유사한 핵심 품목 우선 정렬
+        items.sort((a, b) => {
+          const nameA = (a.FOOD_NM_KR || "").trim();
+          const nameB = (b.FOOD_NM_KR || "").trim();
+
+          const exactA = nameA === query ? 1 : 0;
+          const exactB = nameB === query ? 1 : 0;
+          if (exactA !== exactB) return exactB - exactA;
+
+          const startA = nameA.startsWith(query) ? 1 : 0;
+          const startB = nameB.startsWith(query) ? 1 : 0;
+          if (startA !== startB) return startB - startA;
+
+          return nameA.length - nameB.length;
+        });
 
         items.forEach(food => {
           const name = food.FOOD_NM_KR || "식품";
@@ -884,12 +972,25 @@
           `;
           resultsContainer.appendChild(foodCard);
         });
+
+        paginationBar.style.display = "flex";
+        document.getElementById("btn-prev-page").disabled = (page <= 1);
+        document.getElementById("btn-next-page").disabled = (items.length < numOfRows);
+        document.getElementById("current-page-text").textContent = `${page} 페이지`;
+
       } catch (err) {
         console.error("API 연동 에러:", err);
-        resultsContainer.innerHTML = '<div class="empty-msg">데이터 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.</div>';
+        resultsContainer.innerHTML = '<div class="empty-msg">데이터 조회 중 오류가 발생했습니다. 잠시 후 다시 검색해주세요.</div>';
       } finally {
         btnSearch.disabled = false;
         btnSearch.textContent = "검색";
+      }
+    }
+
+    function changeSearchPage(delta) {
+      const targetPage = currentSearchPage + delta;
+      if (targetPage >= 1) {
+        searchFoodNutrients(targetPage);
       }
     }
 
