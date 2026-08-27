@@ -351,10 +351,10 @@
       font-weight: 600;
     }
 
-    /* 쿠팡 파트너스 배너 컨테이너 */
+    /* 쿠팡 파트너스 배너 공통 컨테이너 */
     .ad-banner-container {
       width: 100%;
-      margin: 8px 0 16px 0;
+      margin: 12px 0 16px 0;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -717,6 +717,17 @@
           <button type="submit" class="btn-primary" id="btn-routine-submit">루틴 추가</button>
         </form>
 
+        <!-- 운동 루틴 페이지 쿠팡 파트너스 배너 영역 -->
+        <div class="ad-banner-container">
+          <div class="ad-banner-wrapper">
+            <script src="https://ads-partners.coupang.com/g.js"></script>
+            <script>
+              new PartnersCoupang.G({"id":1023233,"template":"carousel","trackingCode":"AF5106153","width":"680","height":"140","tsource":""});
+            </script>
+          </div>
+          <div class="ad-disclaimer">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</div>
+        </div>
+
         <div class="list-wrapper" id="routine-list"></div>
         <div id="empty-routine-state" class="empty-msg">등록된 운동 루틴이 없습니다. 상단에서 추가해보세요!</div>
       </div>
@@ -812,7 +823,7 @@
         </div>
       </div>
 
-      <!-- 쿠팡 파트너스 배너 영역 -->
+      <!-- 칼로리 계산기 페이지 쿠팡 파트너스 배너 영역 -->
       <div class="ad-banner-container">
         <div class="ad-banner-wrapper">
           <script src="https://ads-partners.coupang.com/g.js"></script>
@@ -1100,7 +1111,6 @@
         return;
       }
 
-      // 미플린-세인트 지어(Mifflin-St Jeor) 공식
       let bmr = (10 * weight) + (6.25 * height) - (5 * age);
       if (gender === 'male') {
         bmr += 5;
@@ -1368,9 +1378,9 @@
               </div>
               <div class="item-meta-row">
                 <span>${item.kcal} kcal</span> • 
-                <span>탄 ${item.carbs}g</span> • 
-                <span>단 ${item.protein}g</span> • 
-                <span>지 ${item.fat}g</span>
+                <span>탄 ${carbs}g</span> • 
+                <span>단 ${protein}g</span> • 
+                <span>지 ${fat}g</span>
               </div>
             </div>
             <button class="btn-sm-action" onclick="deleteDietItem(${item.id})">삭제</button>
