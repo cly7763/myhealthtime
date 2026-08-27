@@ -418,7 +418,6 @@
       border-color: #38bdf8;
     }
 
-    /* 검색 페이지네이션 바 */
     .pagination-bar {
       display: none;
       justify-content: center;
@@ -644,13 +643,12 @@
       <div class="app-card">
         <h3>🔍 식약처 식품 영양성분 검색</h3>
         <div class="search-box">
-          <input type="text" id="food-search-input" class="search-input" placeholder="음식명 입력 (예: 바나나, 닭가슴살, 김치)" onkeyup="if(window.event.keyCode==13){searchFoodNutrients(1)}" />
+          <input type="text" id="food-search-input" class="search-input" placeholder="음식명 입력 (예: 바나나, 닭가슴살, 고구마, 삶은계란)" onkeyup="if(window.event.keyCode==13){searchFoodNutrients(1)}" />
           <button class="btn-primary" style="padding: 0 16px;" id="btn-food-search" onclick="searchFoodNutrients(1)">검색</button>
         </div>
 
         <div class="list-wrapper" id="food-search-results"></div>
 
-        <!-- 검색 페이지네이션 바 -->
         <div class="pagination-bar" id="search-pagination">
           <button class="btn-page" id="btn-prev-page" onclick="changeSearchPage(-1)">← 이전 페이지</button>
           <span class="page-indicator" id="current-page-text">1 페이지</span>
@@ -676,6 +674,24 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsaWJxcGlqcG1wcXJlaGV3b3huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2OTcwNjYsImV4cCI6MjEwMzI3MzA2Nn0.8an1CTT1QFmedUeItbGN7XgMrepEwy3200HGnoXTUxs";
     const GOOGLE_CLIENT_ID = "784528740097-v1eob22oaigvrhrbgjmliag9pr5urse8.apps.googleusercontent.com";
     const FOOD_API_KEY_DECODED = "IpJLarDm6zKK9HgZH/h4yvfd4SSNv8MpthKqq7aNxnS6G5NuPBq6vsSKyZpvkD756lfb8tV1+LzNM/y2ElZ2ew==";
+
+    // 기본 핵심 영양 DB (네트워크 지연/오류 시 즉각 제공)
+    const CORE_FOOD_DB = [
+      { name: "바나나 (생것)", serving: "100g (1개 중간)", kcal: 89, carbs: 22.8, protein: 1.1, fat: 0.3, keywords: ["바나나", "생바나나"] },
+      { name: "닭가슴살 (생것/냉동)", serving: "100g", kcal: 106, carbs: 0, protein: 23.2, fat: 0.9, keywords: ["닭가슴살", "닭가슴"] },
+      { name: "닭가슴살 (구운것)", serving: "100g", kcal: 165, carbs: 0, protein: 31.0, fat: 3.6, keywords: ["닭가슴살", "구운닭가슴살"] },
+      { name: "고구마 (찐것)", serving: "100g (1개 중간)", kcal: 130, carbs: 31.2, protein: 1.6, fat: 0.2, keywords: ["고구마", "찐고구마"] },
+      { name: "고구마 (군고구마)", serving: "100g", kcal: 141, carbs: 33.6, protein: 1.5, fat: 0.2, keywords: ["고구마", "군고구마"] },
+      { name: "삶은 달걀 (완숙)", serving: "50g (1개)", kcal: 77, carbs: 0.6, protein: 6.3, fat: 5.3, keywords: ["달걀", "계란", "삶은계란", "삶은달걀"] },
+      { name: "쌀밥 (백미밥)", serving: "210g (햇반 1공기)", kcal: 305, carbs: 68.0, protein: 5.0, fat: 0.6, keywords: ["쌀밥", "햇반", "밥", "백미"] },
+      { name: "현미밥", serving: "210g (1공기)", kcal: 310, carbs: 67.0, protein: 6.2, fat: 2.1, keywords: ["현미밥", "현미"] },
+      { name: "오트밀 (귀리)", serving: "40g (1회분)", kcal: 152, carbs: 27.0, protein: 5.3, fat: 2.6, keywords: ["오트밀", "귀리"] },
+      { name: "사과 (생것)", serving: "100g (1/2개)", kcal: 52, carbs: 13.8, protein: 0.3, fat: 0.2, keywords: ["사과"] },
+      { name: "아몬드 (구운것)", serving: "30g (약 23알)", kcal: 174, carbs: 6.1, protein: 6.3, fat: 15.0, keywords: ["아몬드", "견과류"] },
+      { name: "단백질 쉐이크 (WPC/WPI)", serving: "30g (1스쿱)", kcal: 120, carbs: 2.5, protein: 24.0, fat: 1.5, keywords: ["단백질", "프로틴", "쉐이크", "단백질보충제"] },
+      { name: "소고기 우둔살 (구운것)", serving: "100g", kcal: 185, carbs: 0, protein: 29.5, fat: 6.5, keywords: ["소고기", "우둔살", "홍두깨살"] },
+      { name: "그릭 요거트 (무가당)", serving: "100g", kcal: 65, carbs: 3.5, protein: 10.0, fat: 0.5, keywords: ["요거트", "그릭요거트"] }
+    ];
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let currentUser = null;
@@ -867,7 +883,35 @@
       });
     }
 
-    // --- 식약처 식품 영양 API (정확도 우선 정렬 + 페이지네이션) ---
+    // --- 식약처 API 통신 헬퍼 (다중 프록시 폴백) ---
+    async function fetchApiWithFallback(targetUrl) {
+      const proxyList = [
+        `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`,
+        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`,
+        `https://thingproxy.freeboard.io/fetch/${targetUrl}`
+      ];
+
+      for (let proxy of proxyList) {
+        try {
+          const res = await fetch(proxy, { method: "GET" });
+          if (res.ok) {
+            const data = await res.json().catch(async () => {
+              const text = await res.text();
+              return { contents: text };
+            });
+            const textContent = data.contents || (typeof data === "string" ? data : JSON.stringify(data));
+            if (textContent && textContent.length > 20) {
+              return textContent;
+            }
+          }
+        } catch (e) {
+          // 다음 프록시 시도
+        }
+      }
+      throw new Error("모든 프록시 호출 실패");
+    }
+
+    // --- 식품 영양성분 검색 (로컬 대표 DB + 식약처 API 통합) ---
     async function searchFoodNutrients(page = 1) {
       const query = document.getElementById("food-search-input").value.trim();
       const resultsContainer = document.getElementById("food-search-results");
@@ -887,25 +931,44 @@
       resultsContainer.innerHTML = '<div class="empty-msg">식품 영양성분 데이터를 불러오는 중...</div>';
       paginationBar.style.display = "none";
 
-      const numOfRows = 30;
+      let finalResults = [];
+
+      // 1. 첫 페이지 검색 시 로컬 대표 식품 매칭 항목 최상단에 즉시 배치
+      if (page === 1) {
+        const localMatches = CORE_FOOD_DB.filter(f => 
+          f.name.includes(query) || f.keywords.some(k => k.includes(query) || query.includes(k))
+        );
+        localMatches.forEach(f => {
+          finalResults.push({
+            name: f.name,
+            serving: f.serving,
+            kcal: f.kcal,
+            carbs: f.carbs,
+            protein: f.protein,
+            fat: f.fat,
+            isCore: true
+          });
+        });
+      }
+
+      // 2. 식약처 API 호출
+      const numOfRows = 20;
       const targetApi = `https://apis.data.go.kr/1471000/FoodNtrCpntDbInfo02/getFoodNtrCpntDbInq02?serviceKey=${encodeURIComponent(FOOD_API_KEY_DECODED)}&FOOD_NM_KR=${encodeURIComponent(query)}&pageNo=${page}&numOfRows=${numOfRows}&type=json`;
-      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetApi)}`;
 
       try {
-        const response = await fetch(proxyUrl);
-        const text = await response.text();
-        
-        let items = [];
+        const rawText = await fetchApiWithFallback(targetApi);
+        let apiItems = [];
+
         try {
-          const jsonData = JSON.parse(text);
-          items = jsonData?.body?.items || [];
+          const jsonData = JSON.parse(rawText);
+          apiItems = jsonData?.body?.items || [];
         } catch (e) {
           const parser = new DOMParser();
-          const xmlDoc = parser.parseFromString(text, "text/xml");
+          const xmlDoc = parser.parseFromString(rawText, "text/xml");
           const xmlItems = xmlDoc.getElementsByTagName("item");
           for (let i = 0; i < xmlItems.length; i++) {
             const item = xmlItems[i];
-            items.push({
+            apiItems.push({
               FOOD_NM_KR: item.getElementsByTagName("FOOD_NM_KR")[0]?.textContent || "",
               SERVING_SIZE: item.getElementsByTagName("SERVING_SIZE")[0]?.textContent || "",
               AMT_NUM1: item.getElementsByTagName("AMT_NUM1")[0]?.textContent || 0,
@@ -916,36 +979,7 @@
           }
         }
 
-        resultsContainer.innerHTML = "";
-
-        if (items.length === 0) {
-          resultsContainer.innerHTML = `<div class="empty-msg">${page > 1 ? '더 이상 검색 결과가 없습니다.' : '검색 결과가 없습니다.'}</div>`;
-          if (page > 1) {
-            paginationBar.style.display = "flex";
-            document.getElementById("btn-next-page").disabled = true;
-            document.getElementById("btn-prev-page").disabled = false;
-            document.getElementById("current-page-text").textContent = `${page} 페이지`;
-          }
-          return;
-        }
-
-        // 검색어와 일치/유사한 핵심 품목 우선 정렬
-        items.sort((a, b) => {
-          const nameA = (a.FOOD_NM_KR || "").trim();
-          const nameB = (b.FOOD_NM_KR || "").trim();
-
-          const exactA = nameA === query ? 1 : 0;
-          const exactB = nameB === query ? 1 : 0;
-          if (exactA !== exactB) return exactB - exactA;
-
-          const startA = nameA.startsWith(query) ? 1 : 0;
-          const startB = nameB.startsWith(query) ? 1 : 0;
-          if (startA !== startB) return startB - startA;
-
-          return nameA.length - nameB.length;
-        });
-
-        items.forEach(food => {
+        apiItems.forEach(food => {
           const name = food.FOOD_NM_KR || "식품";
           const serving = food.SERVING_SIZE || "1회제공량";
           const kcal = parseFloat(food.AMT_NUM1) || 0;
@@ -953,38 +987,64 @@
           const protein = parseFloat(food.AMT_NUM3) || 0;
           const fat = parseFloat(food.AMT_NUM4) || 0;
 
-          const foodCard = document.createElement("div");
-          foodCard.className = "custom-item-card";
-          foodCard.innerHTML = `
-            <div class="item-info-left">
-              <div class="item-title-row">
-                <strong>${name}</strong>
-                <span class="badge" style="background:#1e293b; color:#94a3b8;">${serving}</span>
-              </div>
-              <div class="item-meta-row">
-                <span>${kcal} kcal</span> • 
-                <span>탄 ${carbs}g</span> • 
-                <span>단 ${protein}g</span> • 
-                <span>지 ${fat}g</span>
-              </div>
-            </div>
-            <button class="btn-sm-action btn-sm-add" onclick='addDietItem(${JSON.stringify({ name, kcal, carbs, protein, fat })})'>+ 추가</button>
-          `;
-          resultsContainer.appendChild(foodCard);
+          // 중복 방지
+          if (!finalResults.some(r => r.name === name)) {
+            finalResults.push({ name, serving, kcal, carbs, protein, fat, isCore: false });
+          }
         });
 
-        paginationBar.style.display = "flex";
-        document.getElementById("btn-prev-page").disabled = (page <= 1);
-        document.getElementById("btn-next-page").disabled = (items.length < numOfRows);
-        document.getElementById("current-page-text").textContent = `${page} 페이지`;
-
       } catch (err) {
-        console.error("API 연동 에러:", err);
-        resultsContainer.innerHTML = '<div class="empty-msg">데이터 조회 중 오류가 발생했습니다. 잠시 후 다시 검색해주세요.</div>';
-      } finally {
-        btnSearch.disabled = false;
-        btnSearch.textContent = "검색";
+        console.warn("식약처 API 응답 지연/차단: 로컬 데이터 세트로 대체 표시합니다.");
       }
+
+      resultsContainer.innerHTML = "";
+
+      if (finalResults.length === 0) {
+        resultsContainer.innerHTML = `<div class="empty-msg">${page > 1 ? '더 이상 검색 결과가 없습니다.' : '검색 결과가 없습니다.'}</div>`;
+        return;
+      }
+
+      // 검색어 유사도 우선 정렬 (대표 품목 및 이름 일치 우선)
+      finalResults.sort((a, b) => {
+        if (a.isCore && !b.isCore) return -1;
+        if (!a.isCore && b.isCore) return 1;
+
+        const exactA = a.name === query ? 1 : 0;
+        const exactB = b.name === query ? 1 : 0;
+        if (exactA !== exactB) return exactB - exactA;
+
+        return a.name.length - b.name.length;
+      });
+
+      finalResults.forEach(item => {
+        const foodCard = document.createElement("div");
+        foodCard.className = "custom-item-card";
+        foodCard.innerHTML = `
+          <div class="item-info-left">
+            <div class="item-title-row">
+              <strong>${item.name}</strong>
+              <span class="badge" style="background:#1e293b; color:#94a3b8;">${item.serving}</span>
+              ${item.isCore ? '<span class="badge" style="background:#0284c7; color:#ffffff;">대표식품</span>' : ''}
+            </div>
+            <div class="item-meta-row">
+              <span>${item.kcal} kcal</span> • 
+              <span>탄 ${item.carbs}g</span> • 
+              <span>단 ${item.protein}g</span> • 
+              <span>지 ${item.fat}g</span>
+            </div>
+          </div>
+          <button class="btn-sm-action btn-sm-add" onclick='addDietItem(${JSON.stringify({ name: item.name, kcal: item.kcal, carbs: item.carbs, protein: item.protein, fat: item.fat })})'>+ 추가</button>
+        `;
+        resultsContainer.appendChild(foodCard);
+      });
+
+      paginationBar.style.display = "flex";
+      document.getElementById("btn-prev-page").disabled = (page <= 1);
+      document.getElementById("btn-next-page").disabled = (finalResults.length < 10);
+      document.getElementById("current-page-text").textContent = `${page} 페이지`;
+
+      btnSearch.disabled = false;
+      btnSearch.textContent = "검색";
     }
 
     function changeSearchPage(delta) {
