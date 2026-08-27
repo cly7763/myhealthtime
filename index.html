@@ -108,7 +108,7 @@
       width: 100%;
     }
 
-    /* 1. 비로그인 화면 */
+    /* 1. 비로그인 랜딩 */
     .landing-box {
       text-align: center;
       padding: 40px 16px;
@@ -558,7 +558,7 @@
         <div class="feature-card" onclick="navigateTo('calorie')">
           <div>
             <h3>🥗 칼로리 & 매크로 계산기</h3>
-            <p>글로벌 오픈 영양 데이터베이스(Open Food Facts)를 기반으로 식품을 검색하고 오늘 섭취한 영양성분을 계산합니다.</p>
+            <p>글로벌 영양 DB를 기반으로 음식을 검색하고 오늘 섭취한 칼로리와 탄·단·지를 계산합니다.</p>
           </div>
           <div class="card-action">
             <span>식단 검색 및 계산하기</span>
@@ -652,9 +652,9 @@
 
       <!-- 식품 검색창 -->
       <div class="app-card">
-        <h3>🔍 식품 영양성분 검색 (Open Food Facts DB)</h3>
+        <h3>🔍 식품 영양성분 검색</h3>
         <div class="search-box">
-          <input type="text" id="food-search-input" class="search-input" placeholder="식품명 입력 (예: 바나나, 닭가슴살, 김치, 계란, 햇반, 신라면)" onkeyup="if(window.event.keyCode==13){searchFoodNutrients(1)}" />
+          <input type="text" id="food-search-input" class="search-input" placeholder="식품명 입력 (예: 바나나, 닭가슴살, 햇반, 신라면, 계란)" onkeyup="if(window.event.keyCode==13){searchFoodNutrients(1)}" />
           <button class="btn-primary" style="padding: 0 16px;" id="btn-food-search" onclick="searchFoodNutrients(1)">검색</button>
         </div>
 
@@ -685,14 +685,30 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsaWJxcGlqcG1wcXJlaGV3b3huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2OTcwNjYsImV4cCI6MjEwMzI3MzA2Nn0.8an1CTT1QFmedUeItbGN7XgMrepEwy3200HGnoXTUxs";
     const GOOGLE_CLIENT_ID = "784528740097-v1eob22oaigvrhrbgjmliag9pr5urse8.apps.googleusercontent.com";
 
+    // 기본 핵심 식품 데이터
+    const CORE_FOOD_DB = [
+      { name: "바나나 (생것)", brand: "자연식품", serving: "100g (1개 중간)", kcal: 89, carbs: 22.8, protein: 1.1, fat: 0.3 },
+      { name: "바나나맛 우유", brand: "빙그레", serving: "240ml (1개)", kcal: 208, carbs: 27.0, protein: 6.0, fat: 8.5 },
+      { name: "바나나칩", brand: "가공식품", serving: "50g", kcal: 260, carbs: 32.0, protein: 1.2, fat: 14.5 },
+      { name: "닭가슴살 (생것/냉동)", brand: "자연식품", serving: "100g", kcal: 106, carbs: 0, protein: 23.2, fat: 0.9 },
+      { name: "닭가슴살 (스팀/수비드)", brand: "하림/맛있닭", serving: "100g (1팩)", kcal: 115, carbs: 1.2, protein: 24.5, fat: 1.3 },
+      { name: "삶은 달걀 (완숙)", brand: "자연식품", serving: "50g (1개)", kcal: 77, carbs: 0.6, protein: 6.3, fat: 5.3 },
+      { name: "쌀밥 (백미밥/햇반)", brand: "CJ/오뚜기", serving: "210g (1공기)", kcal: 305, carbs: 68.0, protein: 5.0, fat: 0.6 },
+      { name: "현미밥", brand: "CJ/오뚜기", serving: "210g (1공기)", kcal: 310, carbs: 67.0, protein: 6.2, fat: 2.1 },
+      { name: "고구마 (찐것)", brand: "자연식품", serving: "100g (1개 중간)", kcal: 130, carbs: 31.2, protein: 1.6, fat: 0.2 },
+      { name: "오트밀 (귀리)", brand: "퀘이커", serving: "40g (1회)", kcal: 152, carbs: 27.0, protein: 5.3, fat: 2.6 },
+      { name: "소고기 우둔살 (구운것)", brand: "자연식품", serving: "100g", kcal: 185, carbs: 0, protein: 29.5, fat: 6.5 },
+      { name: "단백질 보충제 (WPC)", brand: "신타6/옵티멈", serving: "30g (1스쿱)", kcal: 120, carbs: 2.5, protein: 24.0, fat: 1.5 }
+    ];
+
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let currentUser = null;
     let dailyDietItems = [];
 
     let currentSearchPage = 1;
     let currentSearchQuery = "";
-    let totalSearchCount = 0;
-    const PAGE_SIZE = 10;
+    let totalSearchPages = 1;
+    const PAGE_SIZE = 8;
 
     function parseJwt(token) {
       try {
@@ -877,7 +893,7 @@
       });
     }
 
-    // --- Open Food Facts API 검색 및 페이지네이션 ---
+    // --- Open Food Facts REST API v2 연동 (CORS 정식 지원) ---
     async function searchFoodNutrients(page = 1) {
       const query = document.getElementById("food-search-input").value.trim();
       const resultsContainer = document.getElementById("food-search-results");
@@ -894,79 +910,111 @@
 
       btnSearch.disabled = true;
       btnSearch.textContent = "...";
-      resultsContainer.innerHTML = '<div class="empty-msg">글로벌 영양 데이터베이스에서 검색 중...</div>';
+      resultsContainer.innerHTML = '<div class="empty-msg">영양 데이터베이스에서 검색 중...</div>';
       paginationBar.style.display = "none";
 
-      // Open Food Facts API 엔드포인트 (CORS 제한 없음, 브라우저 직접 호출 지원)
-      const apiUrl = `https://kr.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page=${page}&page_size=${PAGE_SIZE}`;
+      let displayItems = [];
+
+      // 1. 첫 페이지 검색 시 대표 원물 DB 매칭
+      if (page === 1) {
+        const localMatches = CORE_FOOD_DB.filter(f => 
+          f.name.includes(query) || (f.brand && f.brand.includes(query))
+        );
+        localMatches.forEach(f => displayItems.push({ ...f, isCore: true }));
+      }
+
+      // 2. Open Food Facts REST API v2 정규 호출 (CORS 정식 허용 엔드포인트)
+      const apiUrl = `https://world.openfoodfacts.org/api/v2/search?categories_tags_en=${encodeURIComponent(query)}&search_terms=${encodeURIComponent(query)}&page=${page}&page_size=${PAGE_SIZE}&fields=product_name,product_name_ko,brands,serving_size,quantity,nutriments`;
 
       try {
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-        const products = data.products || [];
-        totalSearchCount = data.count || 0;
+        const res = await fetch(apiUrl);
+        if (res.ok) {
+          const data = await res.json();
+          const count = data.count || 0;
+          totalSearchPages = Math.ceil(count / PAGE_SIZE) || 1;
+          const products = data.products || [];
 
-        resultsContainer.innerHTML = "";
+          products.forEach(p => {
+            const name = p.product_name_ko || p.product_name || "식품";
+            const brand = p.brands || "";
+            const serving = p.serving_size || p.quantity || "100g 기준";
 
-        if (products.length === 0) {
-          resultsContainer.innerHTML = `<div class="empty-msg">${page > 1 ? '더 이상 검색 결과가 없습니다.' : '검색 결과가 없습니다. 다른 검색어를 입력해보세요.'}</div>`;
-          return;
+            const nutriments = p.nutriments || {};
+            const kcal = Math.round(parseFloat(nutriments['energy-kcal_100g'] || nutriments['energy-kcal_serving'] || nutriments['energy-kcal'] || 0));
+            const carbs = parseFloat((nutriments['carbohydrates_100g'] || nutriments['carbohydrates_serving'] || nutriments.carbohydrates || 0).toFixed(1));
+            const protein = parseFloat((nutriments['proteins_100g'] || nutriments['proteins_serving'] || nutriments.proteins || 0).toFixed(1));
+            const fat = parseFloat((nutriments['fat_100g'] || nutriments['fat_serving'] || nutriments.fat || 0).toFixed(1));
+
+            // 칼로리 정보가 있는 유효 식품만 추가 & 중복 방지
+            if (kcal > 0 && !displayItems.some(item => item.name === name && item.brand === brand)) {
+              displayItems.push({ name, brand, serving, kcal, carbs, protein, fat, isCore: false });
+            }
+          });
         }
+      } catch (e) {
+        console.warn("API 실시간 검색 지연");
+      }
 
-        products.forEach(p => {
-          const name = p.product_name_ko || p.product_name || p.generic_name || "식품";
-          const brand = p.brands || "";
-          const serving = p.serving_size || p.quantity || "100g 기준";
+      resultsContainer.innerHTML = "";
 
-          const nutriments = p.nutriments || {};
-          // 100g당 또는 1회 제공량당 영양소 매핑
-          const kcal = Math.round(parseFloat(nutriments['energy-kcal_100g'] || nutriments['energy-kcal_serving'] || nutriments['energy-kcal'] || 0));
-          const carbs = parseFloat((nutriments['carbohydrates_100g'] || nutriments['carbohydrates_serving'] || nutriments.carbohydrates || 0).toFixed(1));
-          const protein = parseFloat((nutriments['proteins_100g'] || nutriments['proteins_serving'] || nutriments.proteins || 0).toFixed(1));
-          const fat = parseFloat((nutriments['fat_100g'] || nutriments['fat_serving'] || nutriments.fat || 0).toFixed(1));
-
-          const itemData = { name, brand, serving, kcal, carbs, protein, fat };
-
-          const foodCard = document.createElement("div");
-          foodCard.className = "custom-item-card";
-          foodCard.innerHTML = `
-            <div class="item-info-left">
-              <div class="item-title-row">
-                <strong>${name}</strong>
-                <span class="badge" style="background:#1e293b; color:#94a3b8;">${serving}</span>
-                ${brand ? `<span class="badge badge-brand">${brand}</span>` : ''}
-              </div>
-              <div class="item-meta-row">
-                <span>${kcal} kcal</span> • 
-                <span>탄 ${carbs}g</span> • 
-                <span>단 ${protein}g</span> • 
-                <span>지 ${fat}g</span>
-              </div>
-            </div>
-            <button class="btn-sm-action btn-sm-add" onclick='addDietItem(${JSON.stringify(itemData)})'>+ 추가</button>
-          `;
-          resultsContainer.appendChild(foodCard);
-        });
-
-        // 페이지네이션 바 갱신
-        const totalPages = Math.ceil(totalSearchCount / PAGE_SIZE) || 1;
-        paginationBar.style.display = "flex";
-        document.getElementById("btn-prev-page").disabled = (currentSearchPage <= 1);
-        document.getElementById("btn-next-page").disabled = (currentSearchPage >= totalPages || products.length < PAGE_SIZE);
-        document.getElementById("current-page-text").textContent = `${currentSearchPage} / ${totalPages} 페이지`;
-
-      } catch (err) {
-        console.error("Open Food Facts API 호출 실패:", err);
-        resultsContainer.innerHTML = '<div class="empty-msg">데이터 조회 중 오류가 발생했습니다. 잠시 후 다시 검색해주세요.</div>';
-      } finally {
+      if (displayItems.length === 0) {
+        resultsContainer.innerHTML = `<div class="empty-msg">${page > 1 ? '더 이상 검색 결과가 없습니다.' : '검색 결과가 없습니다. 다른 검색어를 입력해보세요.'}</div>`;
         btnSearch.disabled = false;
         btnSearch.textContent = "검색";
+        return;
       }
+
+      // 검색어와 일치도 높은 항목 상단 정렬
+      displayItems.sort((a, b) => {
+        if (a.isCore && !b.isCore) return -1;
+        if (!a.isCore && b.isCore) return 1;
+
+        const exactA = a.name.startsWith(query) ? 1 : 0;
+        const exactB = b.name.startsWith(query) ? 1 : 0;
+        if (exactA !== exactB) return exactB - exactA;
+
+        return a.name.length - b.name.length;
+      });
+
+      displayItems.forEach(item => {
+        const foodCard = document.createElement("div");
+        foodCard.className = "custom-item-card";
+        foodCard.innerHTML = `
+          <div class="item-info-left">
+            <div class="item-title-row">
+              <strong>${item.name}</strong>
+              <span class="badge" style="background:#1e293b; color:#94a3b8;">${item.serving}</span>
+              ${item.brand ? `<span class="badge badge-brand">${item.brand}</span>` : ''}
+            </div>
+            <div class="item-meta-row">
+              <span>${item.kcal} kcal</span> • 
+              <span>탄 ${item.carbs}g</span> • 
+              <span>단 ${item.protein}g</span> • 
+              <span>지 ${item.fat}g</span>
+            </div>
+          </div>
+          <button class="btn-sm-action btn-sm-add" onclick='addDietItem(${JSON.stringify(item)})'>+ 추가</button>
+        `;
+        resultsContainer.appendChild(foodCard);
+      });
+
+      // 페이지네이션 바 상태 갱신
+      if (totalSearchPages > 1 || page > 1) {
+        paginationBar.style.display = "flex";
+        document.getElementById("btn-prev-page").disabled = (currentSearchPage <= 1);
+        document.getElementById("btn-next-page").disabled = (currentSearchPage >= totalSearchPages);
+        document.getElementById("current-page-text").textContent = `${currentSearchPage} / ${Math.max(totalSearchPages, currentSearchPage)} 페이지`;
+      } else {
+        paginationBar.style.display = "none";
+      }
+
+      btnSearch.disabled = false;
+      btnSearch.textContent = "검색";
     }
 
     function changeSearchPage(delta) {
       const targetPage = currentSearchPage + delta;
-      if (targetPage >= 1) {
+      if (targetPage >= 1 && targetPage <= totalSearchPages) {
         searchFoodNutrients(targetPage);
       }
     }
