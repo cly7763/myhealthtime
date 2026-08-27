@@ -351,6 +351,34 @@
       font-weight: 600;
     }
 
+    /* 쿠팡 파트너스 배너 컨테이너 */
+    .ad-banner-container {
+      width: 100%;
+      margin: 8px 0 16px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #0b1120;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 10px 6px 6px 6px;
+      overflow: hidden;
+    }
+    .ad-banner-wrapper {
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+    .ad-disclaimer {
+      font-size: 0.68rem;
+      color: #64748b;
+      margin-top: 6px;
+      text-align: center;
+    }
+
     /* 리스트 및 카드 */
     .list-wrapper {
       display: flex;
@@ -784,6 +812,17 @@
         </div>
       </div>
 
+      <!-- 쿠팡 파트너스 배너 영역 -->
+      <div class="ad-banner-container">
+        <div class="ad-banner-wrapper">
+          <script src="https://ads-partners.coupang.com/g.js"></script>
+          <script>
+            new PartnersCoupang.G({"id":1023233,"template":"carousel","trackingCode":"AF5106153","width":"680","height":"140","tsource":""});
+          </script>
+        </div>
+        <div class="ad-disclaimer">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</div>
+      </div>
+
       <!-- 일일 섭취량 합계 바 -->
       <div class="macro-summary">
         <div class="macro-item">
@@ -1070,11 +1109,10 @@
       }
 
       const tdee = Math.round(bmr * activity);
-      const dietKcal = Math.round(tdee * 0.80); // 감량: -20%
-      const maintainKcal = tdee;              // 유지
-      const bulkKcal = Math.round(tdee * 1.15); // 증량: +15%
+      const dietKcal = Math.round(tdee * 0.80);
+      const maintainKcal = tdee;
+      const bulkKcal = Math.round(tdee * 1.15);
 
-      // 매크로(탄/단/지) 계산 (단백질: 체중kg당 1.8~2.0g 권장)
       function calcMacros(targetKcal, proteinPerKg, fatPercent) {
         const pGrams = Math.round(weight * proteinPerKg);
         const pKcal = pGrams * 4;
@@ -1089,7 +1127,6 @@
       calculatedPlans.maintain = calcMacros(maintainKcal, 1.8, 0.25);
       calculatedPlans.bulk = calcMacros(bulkKcal, 1.8, 0.25);
 
-      // UI 렌더링
       document.getElementById("res-bmr").textContent = Math.round(bmr).toLocaleString();
       document.getElementById("res-tdee").textContent = tdee.toLocaleString();
 
@@ -1110,7 +1147,6 @@
 
       document.getElementById("tdee-result-box").style.display = "block";
 
-      // 로컬 스토리지에 유저 신체 정보 저장
       if (currentUser) {
         const tdeeData = { gender, age, height, weight, activity, currentSelectedPlan };
         localStorage.setItem(`mht_tdee_${currentUser.id}`, JSON.stringify(tdeeData));
@@ -1189,14 +1225,12 @@
       paginationBar.style.display = "none";
 
       try {
-        // 1. Supabase 커스텀 정렬 RPC 함수 호출
         let { data, error } = await supabaseClient.rpc('search_food_ranked', {
           search_term: query,
           page_limit: PAGE_SIZE,
           page_offset: offset
         });
 
-        // 2. RPC 함수 미등록 시 ILIKE 쿼리로 안전 폴백
         if (error) {
           const from = offset;
           const to = from + PAGE_SIZE - 1;
@@ -1254,7 +1288,6 @@
           resultsContainer.appendChild(foodCard);
         });
 
-        // 페이지네이션 바 상태 갱신
         const totalPages = Math.ceil(totalSearchCount / PAGE_SIZE) || 1;
         if (totalPages > 1) {
           paginationBar.style.display = "flex";
