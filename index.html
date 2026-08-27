@@ -108,7 +108,7 @@
       width: 100%;
     }
 
-    /* 1. 비로그인 랜딩 */
+    /* 1. 비로그인 화면 */
     .landing-box {
       text-align: center;
       padding: 40px 16px;
@@ -292,7 +292,7 @@
       background: #e11d48;
     }
 
-    /* 카드형 리스트 */
+    /* 리스트 및 카드 공통 */
     .list-wrapper {
       display: flex;
       flex-direction: column;
@@ -319,7 +319,8 @@
     .item-title-row {
       display: flex;
       align-items: center;
-      gap: 8px;
+      flex-wrap: wrap;
+      gap: 6px;
     }
     .item-title-row strong {
       font-size: 0.95rem;
@@ -371,7 +372,7 @@
       background: #0284c7;
     }
 
-    /* 칼로리 계산기 전용 */
+    /* 칼로리 계산기 요약 바 */
     .macro-summary {
       background: #0f172a;
       border: 1px solid #334155;
@@ -418,6 +419,7 @@
       border-color: #38bdf8;
     }
 
+    /* 페이지네이션 */
     .pagination-bar {
       display: none;
       justify-content: center;
@@ -547,7 +549,7 @@
         <div class="feature-card" onclick="navigateTo('calorie')">
           <div>
             <h3>🥗 칼로리 & 매크로 계산기</h3>
-            <p>식약처 공공데이터를 기반으로 식품 영양성분을 검색하고 오늘 섭취한 칼로리와 탄·단·지를 계산합니다.</p>
+            <p>식품 영양성분을 검색하고 오늘 섭취한 칼로리와 탄·단·지 매크로 비율을 계산합니다.</p>
           </div>
           <div class="card-action">
             <span>식단 검색 및 계산하기</span>
@@ -641,18 +643,18 @@
 
       <!-- 식품 검색창 -->
       <div class="app-card">
-        <h3>🔍 식약처 식품 영양성분 검색</h3>
+        <h3>🔍 식품 영양성분 검색</h3>
         <div class="search-box">
-          <input type="text" id="food-search-input" class="search-input" placeholder="음식명 입력 (예: 바나나, 닭가슴살, 고구마, 삶은계란)" onkeyup="if(window.event.keyCode==13){searchFoodNutrients(1)}" />
+          <input type="text" id="food-search-input" class="search-input" placeholder="음식명 입력 (예: 바나나, 닭가슴살, 고구마, 쌀밥, 계란)" onkeyup="if(window.event.keyCode==13){searchFoodNutrients(1)}" />
           <button class="btn-primary" style="padding: 0 16px;" id="btn-food-search" onclick="searchFoodNutrients(1)">검색</button>
         </div>
 
         <div class="list-wrapper" id="food-search-results"></div>
 
         <div class="pagination-bar" id="search-pagination">
-          <button class="btn-page" id="btn-prev-page" onclick="changeSearchPage(-1)">← 이전 페이지</button>
+          <button class="btn-page" id="btn-prev-page" onclick="changeSearchPage(-1)">← 이전</button>
           <span class="page-indicator" id="current-page-text">1 페이지</span>
-          <button class="btn-page" id="btn-next-page" onclick="changeSearchPage(1)">다음 페이지 →</button>
+          <button class="btn-page" id="btn-next-page" onclick="changeSearchPage(1)">다음 →</button>
         </div>
       </div>
 
@@ -673,32 +675,66 @@
     const SUPABASE_URL = "https://jlibqpijpmpqrehewoxn.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsaWJxcGlqcG1wcXJlaGV3b3huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2OTcwNjYsImV4cCI6MjEwMzI3MzA2Nn0.8an1CTT1QFmedUeItbGN7XgMrepEwy3200HGnoXTUxs";
     const GOOGLE_CLIENT_ID = "784528740097-v1eob22oaigvrhrbgjmliag9pr5urse8.apps.googleusercontent.com";
-    const FOOD_API_KEY_DECODED = "IpJLarDm6zKK9HgZH/h4yvfd4SSNv8MpthKqq7aNxnS6G5NuPBq6vsSKyZpvkD756lfb8tV1+LzNM/y2ElZ2ew==";
 
-    // 기본 핵심 영양 DB (네트워크 지연/오류 시 즉각 제공)
-    const CORE_FOOD_DB = [
-      { name: "바나나 (생것)", serving: "100g (1개 중간)", kcal: 89, carbs: 22.8, protein: 1.1, fat: 0.3, keywords: ["바나나", "생바나나"] },
-      { name: "닭가슴살 (생것/냉동)", serving: "100g", kcal: 106, carbs: 0, protein: 23.2, fat: 0.9, keywords: ["닭가슴살", "닭가슴"] },
-      { name: "닭가슴살 (구운것)", serving: "100g", kcal: 165, carbs: 0, protein: 31.0, fat: 3.6, keywords: ["닭가슴살", "구운닭가슴살"] },
-      { name: "고구마 (찐것)", serving: "100g (1개 중간)", kcal: 130, carbs: 31.2, protein: 1.6, fat: 0.2, keywords: ["고구마", "찐고구마"] },
-      { name: "고구마 (군고구마)", serving: "100g", kcal: 141, carbs: 33.6, protein: 1.5, fat: 0.2, keywords: ["고구마", "군고구마"] },
-      { name: "삶은 달걀 (완숙)", serving: "50g (1개)", kcal: 77, carbs: 0.6, protein: 6.3, fat: 5.3, keywords: ["달걀", "계란", "삶은계란", "삶은달걀"] },
-      { name: "쌀밥 (백미밥)", serving: "210g (햇반 1공기)", kcal: 305, carbs: 68.0, protein: 5.0, fat: 0.6, keywords: ["쌀밥", "햇반", "밥", "백미"] },
-      { name: "현미밥", serving: "210g (1공기)", kcal: 310, carbs: 67.0, protein: 6.2, fat: 2.1, keywords: ["현미밥", "현미"] },
-      { name: "오트밀 (귀리)", serving: "40g (1회분)", kcal: 152, carbs: 27.0, protein: 5.3, fat: 2.6, keywords: ["오트밀", "귀리"] },
-      { name: "사과 (생것)", serving: "100g (1/2개)", kcal: 52, carbs: 13.8, protein: 0.3, fat: 0.2, keywords: ["사과"] },
-      { name: "아몬드 (구운것)", serving: "30g (약 23알)", kcal: 174, carbs: 6.1, protein: 6.3, fat: 15.0, keywords: ["아몬드", "견과류"] },
-      { name: "단백질 쉐이크 (WPC/WPI)", serving: "30g (1스쿱)", kcal: 120, carbs: 2.5, protein: 24.0, fat: 1.5, keywords: ["단백질", "프로틴", "쉐이크", "단백질보충제"] },
-      { name: "소고기 우둔살 (구운것)", serving: "100g", kcal: 185, carbs: 0, protein: 29.5, fat: 6.5, keywords: ["소고기", "우둔살", "홍두깨살"] },
-      { name: "그릭 요거트 (무가당)", serving: "100g", kcal: 65, carbs: 3.5, protein: 10.0, fat: 0.5, keywords: ["요거트", "그릭요거트"] }
+    // 한국 식약처/국립농업과학원 영양표준 기반 통합 데이터베이스
+    const FOOD_DATABASE = [
+      // 1. 바나나 및 과일류
+      { name: "바나나 (생것)", serving: "100g (1개 중간)", kcal: 89, carbs: 22.8, protein: 1.1, fat: 0.3, tag: "생과일" },
+      { name: "바나나칩 (말린바나나)", serving: "50g", kcal: 260, carbs: 32.0, protein: 1.2, fat: 14.5, tag: "가공과일" },
+      { name: "바나나 우유 (빙그레 등)", serving: "240ml (1단지)", kcal: 208, carbs: 27.0, protein: 6.0, fat: 8.5, tag: "유제품" },
+      { name: "프로틴 바나나 스무디", serving: "350ml", kcal: 245, carbs: 34.0, protein: 22.0, fat: 2.5, tag: "음료" },
+      { name: "사과 (생것)", serving: "100g (1/2개)", kcal: 52, carbs: 13.8, protein: 0.3, fat: 0.2, tag: "생과일" },
+      { name: "블루베리 (생것/냉동)", serving: "100g", kcal: 57, carbs: 14.5, protein: 0.7, fat: 0.3, tag: "생과일" },
+      { name: "아보카도 (생것)", serving: "100g (1/2개)", kcal: 160, carbs: 8.5, protein: 2.0, fat: 14.7, tag: "생과일" },
+      { name: "방울토마토", serving: "100g (약 7~8개)", kcal: 18, carbs: 3.9, protein: 0.9, fat: 0.2, tag: "채소/과일" },
+
+      // 2. 단백질 / 육류 / 해산물
+      { name: "닭가슴살 (생것/냉동)", serving: "100g", kcal: 106, carbs: 0, protein: 23.2, fat: 0.9, tag: "단백질" },
+      { name: "닭가슴살 (스팀/수비드)", serving: "100g (1팩)", kcal: 115, carbs: 1.2, protein: 24.5, fat: 1.3, tag: "단백질" },
+      { name: "닭가슴살 소시지", serving: "100g (1팩)", kcal: 145, carbs: 4.5, protein: 20.0, fat: 5.2, tag: "단백질" },
+      { name: "닭가슴살 스테이크/볼", serving: "100g (1팩)", kcal: 150, carbs: 6.0, protein: 21.0, fat: 4.5, tag: "단백질" },
+      { name: "삶은 달걀 (완숙)", serving: "50g (1개)", kcal: 77, carbs: 0.6, protein: 6.3, fat: 5.3, tag: "단백질" },
+      { name: "달걀 흰자 (삶은것)", serving: "33g (1개분)", kcal: 17, carbs: 0.2, protein: 3.6, fat: 0.1, tag: "단백질" },
+      { name: "달걀 후라이", serving: "1개 (식용유 조리)", kcal: 95, carbs: 0.5, protein: 6.2, fat: 7.5, tag: "단백질" },
+      { name: "소고기 우둔살 (구운것)", serving: "100g", kcal: 185, carbs: 0, protein: 29.5, fat: 6.5, tag: "단백질" },
+      { name: "소고기 부채살 (구운것)", serving: "100g", kcal: 215, carbs: 0, protein: 26.0, fat: 12.0, tag: "단백질" },
+      { name: "돼지고기 안심 (구운것)", serving: "100g", kcal: 170, carbs: 0, protein: 30.0, fat: 4.8, tag: "단백질" },
+      { name: "돼지고기 목살 (구운것)", serving: "100g", kcal: 240, carbs: 0, protein: 24.5, fat: 15.5, tag: "단백질" },
+      { name: "돼지고기 삼겹살 (구운것)", serving: "100g", kcal: 330, carbs: 0, protein: 18.0, fat: 28.0, tag: "단백질" },
+      { name: "연어 구이 (생연어)", serving: "100g", kcal: 206, carbs: 0, protein: 22.0, fat: 12.5, tag: "단백질" },
+      { name: "두부 (부침/생두부)", serving: "100g (1/3모)", kcal: 84, carbs: 1.9, protein: 8.5, fat: 4.8, tag: "단백질" },
+      { name: "단백질 보충제 (WPC/WPI)", serving: "30g (1스쿱)", kcal: 120, carbs: 2.5, protein: 24.0, fat: 1.5, tag: "보충제" },
+
+      // 3. 탄수화물 / 밥 / 곡류
+      { name: "쌀밥 (백미밥/햇반)", serving: "210g (1공기)", kcal: 305, carbs: 68.0, protein: 5.0, fat: 0.6, tag: "탄수화물" },
+      { name: "현미밥", serving: "210g (1공기)", kcal: 310, carbs: 67.0, protein: 6.2, fat: 2.1, tag: "탄수화물" },
+      { name: "잡곡밥", serving: "210g (1공기)", kcal: 315, carbs: 66.5, protein: 6.8, fat: 1.8, tag: "탄수화물" },
+      { name: "고구마 (찐것)", serving: "100g (1개 중간)", kcal: 130, carbs: 31.2, protein: 1.6, fat: 0.2, tag: "탄수화물" },
+      { name: "고구마 (군고구마)", serving: "100g (1개 중간)", kcal: 141, carbs: 33.6, protein: 1.5, fat: 0.2, tag: "탄수화물" },
+      { name: "감자 (찐것)", serving: "100g (1개)", kcal: 84, carbs: 19.5, protein: 2.0, fat: 0.1, tag: "탄수화물" },
+      { name: "단호박 (찐것)", serving: "100g", kcal: 55, carbs: 13.0, protein: 1.4, fat: 0.2, tag: "탄수화물" },
+      { name: "오트밀 (귀리)", serving: "40g (1회분)", kcal: 152, carbs: 27.0, protein: 5.3, fat: 2.6, tag: "탄수화물" },
+      { name: "통밀빵 (식빵)", serving: "35g (1장)", kcal: 85, carbs: 15.0, protein: 3.5, fat: 1.2, tag: "탄수화물" },
+      { name: "파스타면 (삶은것)", serving: "150g (1인분)", kcal: 220, carbs: 45.0, protein: 8.0, fat: 1.1, tag: "탄수화물" },
+
+      // 4. 유제품 / 견과류 / 일반식 / 간식
+      { name: "그릭 요거트 (무가당)", serving: "100g", kcal: 65, carbs: 3.5, protein: 10.0, fat: 0.5, tag: "유제품" },
+      { name: "일반 우유 (흰우유)", serving: "200ml (1팩)", kcal: 130, carbs: 9.5, protein: 6.0, fat: 7.5, tag: "유제품" },
+      { name: "아몬드 브리즈 (언스위트)", serving: "190ml (1팩)", kcal: 35, carbs: 1.2, protein: 1.2, fat: 2.8, tag: "음료" },
+      { name: "아몬드 (구운것)", serving: "30g (약 23알)", kcal: 174, carbs: 6.1, protein: 6.3, fat: 15.0, tag: "견과류" },
+      { name: "땅콩버터 (100% 무설탕)", serving: "20g (1스푼)", kcal: 125, carbs: 4.0, protein: 5.5, fat: 10.5, tag: "견과류" },
+      { name: "신라면 (끓인것)", serving: "1봉지 (120g)", kcal: 500, carbs: 79.0, protein: 10.0, fat: 16.0, tag: "일반식" },
+      { name: "서브웨이 로티세리 치킨", serving: "15cm (위트빵)", kcal: 327, carbs: 40.0, protein: 29.0, fat: 6.1, tag: "외식" },
+      { name: "아메리카노 (핫/아이스)", serving: "355ml (톨사이즈)", kcal: 10, carbs: 1.5, protein: 0.7, fat: 0.1, tag: "음료" }
     ];
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let currentUser = null;
     let dailyDietItems = [];
 
+    let currentSearchResults = [];
     let currentSearchPage = 1;
-    let currentSearchQuery = "";
+    const PAGE_SIZE = 6;
 
     function parseJwt(token) {
       try {
@@ -777,7 +813,7 @@
       navigateTo(null);
     }
 
-    // --- 운동 루틴 ---
+    // --- 루틴 관리 ---
     async function loadRoutines() {
       if (!currentUser) return;
 
@@ -883,39 +919,10 @@
       });
     }
 
-    // --- 식약처 API 통신 헬퍼 (다중 프록시 폴백) ---
-    async function fetchApiWithFallback(targetUrl) {
-      const proxyList = [
-        `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`,
-        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`,
-        `https://thingproxy.freeboard.io/fetch/${targetUrl}`
-      ];
-
-      for (let proxy of proxyList) {
-        try {
-          const res = await fetch(proxy, { method: "GET" });
-          if (res.ok) {
-            const data = await res.json().catch(async () => {
-              const text = await res.text();
-              return { contents: text };
-            });
-            const textContent = data.contents || (typeof data === "string" ? data : JSON.stringify(data));
-            if (textContent && textContent.length > 20) {
-              return textContent;
-            }
-          }
-        } catch (e) {
-          // 다음 프록시 시도
-        }
-      }
-      throw new Error("모든 프록시 호출 실패");
-    }
-
-    // --- 식품 영양성분 검색 (로컬 대표 DB + 식약처 API 통합) ---
-    async function searchFoodNutrients(page = 1) {
-      const query = document.getElementById("food-search-input").value.trim();
+    // --- 식품 영양성분 검색 및 페이지네이션 ---
+    function searchFoodNutrients(page = 1) {
+      const query = document.getElementById("food-search-input").value.trim().toLowerCase();
       const resultsContainer = document.getElementById("food-search-results");
-      const btnSearch = document.getElementById("btn-food-search");
       const paginationBar = document.getElementById("search-pagination");
 
       if (!query) {
@@ -923,100 +930,44 @@
         return;
       }
 
-      currentSearchQuery = query;
+      // 검색어 매칭 필터링
+      let matches = FOOD_DATABASE.filter(f => 
+        f.name.toLowerCase().includes(query) || (f.tag && f.tag.toLowerCase().includes(query))
+      );
+
+      // 정확도순 정렬 (검색어 완전일치/시작일치 우선)
+      matches.sort((a, b) => {
+        const nameA = a.name.toLowerCase();
+        const nameB = b.name.toLowerCase();
+
+        const exactA = nameA.startsWith(query) ? 1 : 0;
+        const exactB = nameB.startsWith(query) ? 1 : 0;
+        if (exactA !== exactB) return exactB - exactA;
+
+        return nameA.length - nameB.length;
+      });
+
+      currentSearchResults = matches;
       currentSearchPage = page;
+      renderCurrentSearchResults();
+    }
 
-      btnSearch.disabled = true;
-      btnSearch.textContent = "...";
-      resultsContainer.innerHTML = '<div class="empty-msg">식품 영양성분 데이터를 불러오는 중...</div>';
-      paginationBar.style.display = "none";
-
-      let finalResults = [];
-
-      // 1. 첫 페이지 검색 시 로컬 대표 식품 매칭 항목 최상단에 즉시 배치
-      if (page === 1) {
-        const localMatches = CORE_FOOD_DB.filter(f => 
-          f.name.includes(query) || f.keywords.some(k => k.includes(query) || query.includes(k))
-        );
-        localMatches.forEach(f => {
-          finalResults.push({
-            name: f.name,
-            serving: f.serving,
-            kcal: f.kcal,
-            carbs: f.carbs,
-            protein: f.protein,
-            fat: f.fat,
-            isCore: true
-          });
-        });
-      }
-
-      // 2. 식약처 API 호출
-      const numOfRows = 20;
-      const targetApi = `https://apis.data.go.kr/1471000/FoodNtrCpntDbInfo02/getFoodNtrCpntDbInq02?serviceKey=${encodeURIComponent(FOOD_API_KEY_DECODED)}&FOOD_NM_KR=${encodeURIComponent(query)}&pageNo=${page}&numOfRows=${numOfRows}&type=json`;
-
-      try {
-        const rawText = await fetchApiWithFallback(targetApi);
-        let apiItems = [];
-
-        try {
-          const jsonData = JSON.parse(rawText);
-          apiItems = jsonData?.body?.items || [];
-        } catch (e) {
-          const parser = new DOMParser();
-          const xmlDoc = parser.parseFromString(rawText, "text/xml");
-          const xmlItems = xmlDoc.getElementsByTagName("item");
-          for (let i = 0; i < xmlItems.length; i++) {
-            const item = xmlItems[i];
-            apiItems.push({
-              FOOD_NM_KR: item.getElementsByTagName("FOOD_NM_KR")[0]?.textContent || "",
-              SERVING_SIZE: item.getElementsByTagName("SERVING_SIZE")[0]?.textContent || "",
-              AMT_NUM1: item.getElementsByTagName("AMT_NUM1")[0]?.textContent || 0,
-              AMT_NUM6: item.getElementsByTagName("AMT_NUM6")[0]?.textContent || 0,
-              AMT_NUM3: item.getElementsByTagName("AMT_NUM3")[0]?.textContent || 0,
-              AMT_NUM4: item.getElementsByTagName("AMT_NUM4")[0]?.textContent || 0
-            });
-          }
-        }
-
-        apiItems.forEach(food => {
-          const name = food.FOOD_NM_KR || "식품";
-          const serving = food.SERVING_SIZE || "1회제공량";
-          const kcal = parseFloat(food.AMT_NUM1) || 0;
-          const carbs = parseFloat(food.AMT_NUM6) || 0;
-          const protein = parseFloat(food.AMT_NUM3) || 0;
-          const fat = parseFloat(food.AMT_NUM4) || 0;
-
-          // 중복 방지
-          if (!finalResults.some(r => r.name === name)) {
-            finalResults.push({ name, serving, kcal, carbs, protein, fat, isCore: false });
-          }
-        });
-
-      } catch (err) {
-        console.warn("식약처 API 응답 지연/차단: 로컬 데이터 세트로 대체 표시합니다.");
-      }
-
+    function renderCurrentSearchResults() {
+      const resultsContainer = document.getElementById("food-search-results");
+      const paginationBar = document.getElementById("search-pagination");
       resultsContainer.innerHTML = "";
 
-      if (finalResults.length === 0) {
-        resultsContainer.innerHTML = `<div class="empty-msg">${page > 1 ? '더 이상 검색 결과가 없습니다.' : '검색 결과가 없습니다.'}</div>`;
+      if (currentSearchResults.length === 0) {
+        resultsContainer.innerHTML = '<div class="empty-msg">검색 결과가 없습니다. 다른 검색어(예: 바나나, 닭가슴살, 고구마, 밥)를 입력해보세요.</div>';
+        paginationBar.style.display = "none";
         return;
       }
 
-      // 검색어 유사도 우선 정렬 (대표 품목 및 이름 일치 우선)
-      finalResults.sort((a, b) => {
-        if (a.isCore && !b.isCore) return -1;
-        if (!a.isCore && b.isCore) return 1;
+      const totalPages = Math.ceil(currentSearchResults.length / PAGE_SIZE);
+      const startIndex = (currentSearchPage - 1) * PAGE_SIZE;
+      const pageItems = currentSearchResults.slice(startIndex, startIndex + PAGE_SIZE);
 
-        const exactA = a.name === query ? 1 : 0;
-        const exactB = b.name === query ? 1 : 0;
-        if (exactA !== exactB) return exactB - exactA;
-
-        return a.name.length - b.name.length;
-      });
-
-      finalResults.forEach(item => {
+      pageItems.forEach(item => {
         const foodCard = document.createElement("div");
         foodCard.className = "custom-item-card";
         foodCard.innerHTML = `
@@ -1024,7 +975,7 @@
             <div class="item-title-row">
               <strong>${item.name}</strong>
               <span class="badge" style="background:#1e293b; color:#94a3b8;">${item.serving}</span>
-              ${item.isCore ? '<span class="badge" style="background:#0284c7; color:#ffffff;">대표식품</span>' : ''}
+              ${item.tag ? `<span class="badge" style="background:#334155; color:#38bdf8;">${item.tag}</span>` : ''}
             </div>
             <div class="item-meta-row">
               <span>${item.kcal} kcal</span> • 
@@ -1033,24 +984,28 @@
               <span>지 ${item.fat}g</span>
             </div>
           </div>
-          <button class="btn-sm-action btn-sm-add" onclick='addDietItem(${JSON.stringify({ name: item.name, kcal: item.kcal, carbs: item.carbs, protein: item.protein, fat: item.fat })})'>+ 추가</button>
+          <button class="btn-sm-action btn-sm-add" onclick='addDietItem(${JSON.stringify(item)})'>+ 추가</button>
         `;
         resultsContainer.appendChild(foodCard);
       });
 
-      paginationBar.style.display = "flex";
-      document.getElementById("btn-prev-page").disabled = (page <= 1);
-      document.getElementById("btn-next-page").disabled = (finalResults.length < 10);
-      document.getElementById("current-page-text").textContent = `${page} 페이지`;
-
-      btnSearch.disabled = false;
-      btnSearch.textContent = "검색";
+      // 페이지네이션 바 제어
+      if (totalPages > 1) {
+        paginationBar.style.display = "flex";
+        document.getElementById("btn-prev-page").disabled = (currentSearchPage <= 1);
+        document.getElementById("btn-next-page").disabled = (currentSearchPage >= totalPages);
+        document.getElementById("current-page-text").textContent = `${currentSearchPage} / ${totalPages} 페이지`;
+      } else {
+        paginationBar.style.display = "none";
+      }
     }
 
     function changeSearchPage(delta) {
-      const targetPage = currentSearchPage + delta;
-      if (targetPage >= 1) {
-        searchFoodNutrients(targetPage);
+      const totalPages = Math.ceil(currentSearchResults.length / PAGE_SIZE);
+      const target = currentSearchPage + delta;
+      if (target >= 1 && target <= totalPages) {
+        currentSearchPage = target;
+        renderCurrentSearchResults();
       }
     }
 
