@@ -192,8 +192,8 @@
       gap: 4px;
     }
 
-    /* 3. 운동 루틴 세부 뷰 */
-    .view-routine {
+    /* 공통 뷰 헤더 & 카드 */
+    .view-section {
       display: none;
       animation: fadeIn 0.2s ease-in-out;
     }
@@ -221,14 +221,14 @@
       color: #ffffff;
       border-color: #64748b;
     }
-
-    .routine-card {
+    .app-card {
       background: #1e293b;
       border: 1px solid #334155;
       border-radius: 14px;
       padding: 16px;
+      margin-bottom: 16px;
     }
-    .routine-card h3 {
+    .app-card h3 {
       font-size: 1.1rem;
       font-weight: 700;
       color: #f8fafc;
@@ -238,7 +238,7 @@
       gap: 6px;
     }
 
-    /* 모바일 맞춤 2열 그리드 입력 폼 */
+    /* 루틴 입력 폼 */
     .routine-form {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -277,8 +277,7 @@
     .form-group input:focus, .form-group select:focus {
       border-color: #f43f5e;
     }
-    .btn-add {
-      grid-column: span 2;
+    .btn-primary {
       height: 44px;
       background: #f43f5e;
       color: white;
@@ -288,19 +287,18 @@
       font-weight: 700;
       cursor: pointer;
       transition: 0.2s;
-      margin-top: 4px;
     }
-    .btn-add:hover {
+    .btn-primary:hover {
       background: #e11d48;
     }
 
-    /* 모바일 최적화 카드형 루틴 리스트 */
-    .routine-list-wrapper {
+    /* 카드형 리스트 공통 */
+    .list-wrapper {
       display: flex;
       flex-direction: column;
       gap: 10px;
     }
-    .routine-item-card {
+    .custom-item-card {
       background: #0f172a;
       border: 1px solid #334155;
       border-radius: 8px;
@@ -310,20 +308,17 @@
       align-items: center;
       transition: border-color 0.2s;
     }
-    .routine-item-card:hover {
-      border-color: #475569;
-    }
-    .routine-info-left {
+    .item-info-left {
       display: flex;
       flex-direction: column;
       gap: 4px;
     }
-    .routine-title-row {
+    .item-title-row {
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    .routine-title-row strong {
+    .item-title-row strong {
       font-size: 0.95rem;
       color: #f1f5f9;
     }
@@ -336,17 +331,18 @@
       background: #334155;
       color: #38bdf8;
     }
-    .routine-meta-row {
+    .item-meta-row {
       font-size: 0.8rem;
       color: #94a3b8;
       display: flex;
-      gap: 8px;
+      flex-wrap: wrap;
+      gap: 6px;
     }
-    .routine-meta-row span {
+    .item-meta-row span {
       color: #cbd5e1;
       font-weight: 600;
     }
-    .btn-delete {
+    .btn-sm-action {
       background: #1e293b;
       border: 1px solid #475569;
       color: #94a3b8;
@@ -357,11 +353,68 @@
       transition: 0.2s;
       white-space: nowrap;
     }
-    .btn-delete:hover {
+    .btn-sm-action:hover {
       color: #f43f5e;
       border-color: #f43f5e;
       background: rgba(244, 63, 94, 0.1);
     }
+    .btn-sm-add {
+      color: #38bdf8;
+      border-color: #0284c7;
+    }
+    .btn-sm-add:hover {
+      color: #ffffff;
+      border-color: #38bdf8;
+      background: #0284c7;
+    }
+
+    /* 칼로리 계산기 전용 스타일 */
+    .macro-summary {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 16px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      text-align: center;
+      gap: 8px;
+    }
+    .macro-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .macro-label {
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+    .macro-val {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #f43f5e;
+    }
+
+    .search-box {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .search-input {
+      flex: 1;
+      height: 42px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 0 12px;
+      color: #f8fafc;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .search-input:focus {
+      border-color: #38bdf8;
+    }
+
     .empty-msg {
       text-align: center;
       padding: 24px;
@@ -404,10 +457,9 @@
       .form-group.full-width {
         grid-column: span 1;
       }
-      .btn-add {
+      .routine-form .btn-primary {
         grid-column: span 1;
         width: auto;
-        margin-top: 0;
       }
     }
   </style>
@@ -433,7 +485,7 @@
     <!-- 1. 비로그인 화면 -->
     <section class="landing-box" id="landing-section">
       <h1>나만의 헬스 플래너, MyHealthTime</h1>
-      <p>구글 로그인 후 실시간으로 운동 루틴을 클라우드에 저장하고 관리하세요.</p>
+      <p>구글 로그인 후 실시간으로 운동 루틴과 식단 칼로리를 클라우드에서 관리하세요.</p>
       <div class="google-btn-wrapper">
         <div id="google-main-btn"></div>
       </div>
@@ -443,7 +495,7 @@
     <section class="dashboard" id="dashboard-section">
       <div class="dashboard-header">
         <h2 id="welcome-msg">환영합니다!</h2>
-        <p>원하는 메뉴를 선택하여 운동 관리를 시작해보세요.</p>
+        <p>원하는 메뉴를 선택하여 건강 관리를 시작해보세요.</p>
       </div>
 
       <div class="feature-grid">
@@ -458,13 +510,14 @@
           </div>
         </div>
 
-        <div class="feature-card" style="opacity: 0.6; cursor: default;">
+        <div class="feature-card" onclick="navigateTo('calorie')">
           <div>
             <h3>🥗 칼로리 & 매크로 계산기</h3>
-            <p>기초대사량(BMR)과 목표 체중에 따른 탄/단/지 일일 섭취 가이드를 계산합니다. (준비 중)</p>
+            <p>식약처 공공데이터를 기반으로 식품 영양성분을 검색하고 오늘 섭취한 칼로리와 탄·단·지를 계산합니다.</p>
           </div>
-          <div class="card-action" style="color: #64748b;">
-            <span>오픈 예정</span>
+          <div class="card-action">
+            <span>식단 검색 및 계산하기</span>
+            <span>→</span>
           </div>
         </div>
 
@@ -481,12 +534,12 @@
     </section>
 
     <!-- 3. 운동 루틴 관리 세부 화면 -->
-    <section class="view-routine" id="routine-section">
+    <section class="view-section" id="routine-section">
       <div class="view-header">
         <button class="btn-back" onclick="navigateTo('dashboard')">← 대시보드로 돌아가기</button>
       </div>
 
-      <div class="routine-card">
+      <div class="app-card">
         <h3>🏋️ 내 운동 루틴 설정</h3>
 
         <form class="routine-form" id="routine-form" onsubmit="handleAddRoutine(event)">
@@ -518,12 +571,56 @@
             <label>세트</label>
             <input type="number" id="sets" placeholder="4" min="1" required />
           </div>
-          <button type="submit" class="btn-add" id="btn-submit">루틴 추가</button>
+          <button type="submit" class="btn-primary" id="btn-routine-submit">루틴 추가</button>
         </form>
 
-        <!-- 모바일 카드형 리스트 렌더링 영역 -->
-        <div class="routine-list-wrapper" id="routine-list"></div>
-        <div id="empty-state" class="empty-msg">등록된 운동 루틴이 없습니다. 상단에서 추가해보세요!</div>
+        <div class="list-wrapper" id="routine-list"></div>
+        <div id="empty-routine-state" class="empty-msg">등록된 운동 루틴이 없습니다. 상단에서 추가해보세요!</div>
+      </div>
+    </section>
+
+    <!-- 4. 칼로리 & 매크로 계산기 화면 -->
+    <section class="view-section" id="calorie-section">
+      <div class="view-header">
+        <button class="btn-back" onclick="navigateTo('dashboard')">← 대시보드로 돌아가기</button>
+      </div>
+
+      <!-- 일일 영양 합계 카드 -->
+      <div class="macro-summary">
+        <div class="macro-item">
+          <span class="macro-label">총 열량</span>
+          <span class="macro-val" id="total-kcal">0 kcal</span>
+        </div>
+        <div class="macro-item">
+          <span class="macro-label">탄수화물</span>
+          <span class="macro-val" style="color: #38bdf8;" id="total-carbs">0g</span>
+        </div>
+        <div class="macro-item">
+          <span class="macro-label">단백질</span>
+          <span class="macro-val" style="color: #4ade80;" id="total-protein">0g</span>
+        </div>
+        <div class="macro-item">
+          <span class="macro-label">지방</span>
+          <span class="macro-val" style="color: #facc15;" id="total-fat">0g</span>
+        </div>
+      </div>
+
+      <!-- 식약처 식품 검색 영역 -->
+      <div class="app-card">
+        <h3>🔍 식약처 식품 영양성분 검색</h3>
+        <div class="search-box">
+          <input type="text" id="food-search-input" class="search-input" placeholder="음식명 입력 (예: 닭가슴살, 바나나)" onkeyup="if(window.event.keyCode==13){searchFoodNutrients()}" />
+          <button class="btn-primary" style="padding: 0 16px;" id="btn-food-search" onclick="searchFoodNutrients()">검색</button>
+        </div>
+
+        <div class="list-wrapper" id="food-search-results"></div>
+      </div>
+
+      <!-- 오늘 기록한 식단 목록 -->
+      <div class="app-card">
+        <h3>🍽️ 오늘 먹은 식단 목록</h3>
+        <div class="list-wrapper" id="daily-diet-list"></div>
+        <div id="empty-diet-state" class="empty-msg">기록된 식단이 없습니다. 위에서 검색 후 추가해보세요!</div>
       </div>
     </section>
   </main>
@@ -536,9 +633,13 @@
     const SUPABASE_URL = "https://jlibqpijpmpqrehewoxn.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsaWJxcGlqcG1wcXJlaGV3b3huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2OTcwNjYsImV4cCI6MjEwMzI3MzA2Nn0.8an1CTT1QFmedUeItbGN7XgMrepEwy3200HGnoXTUxs";
     const GOOGLE_CLIENT_ID = "784528740097-v1eob22oaigvrhrbgjmliag9pr5urse8.apps.googleusercontent.com";
+    
+    // 식약처 발급 일반 인증키
+    const FOOD_API_KEY = "IpJLarDm6zKK9HgZH%2Fh4yvfd4SSNv8MpthKqq7aNxnS6G5NuPBq6vsSKyZpvkD756lfb8tV1%2BLzNM%2Fy2ElZ2ew%3D%3D";
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let currentUser = null;
+    let dailyDietItems = [];
 
     function parseJwt(token) {
       try {
@@ -557,21 +658,25 @@
     }
 
     function navigateTo(view) {
+      const sections = ['landing-section', 'dashboard-section', 'routine-section', 'calorie-section'];
+      sections.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+
       if (!currentUser) {
         document.getElementById("landing-section").style.display = "block";
-        document.getElementById("dashboard-section").style.display = "none";
-        document.getElementById("routine-section").style.display = "none";
         return;
       }
 
-      document.getElementById("landing-section").style.display = "none";
       if (view === "routine") {
-        document.getElementById("dashboard-section").style.display = "none";
         document.getElementById("routine-section").style.display = "block";
         loadRoutines();
+      } else if (view === "calorie") {
+        document.getElementById("calorie-section").style.display = "block";
+        loadSavedDiet();
       } else {
         document.getElementById("dashboard-section").style.display = "block";
-        document.getElementById("routine-section").style.display = "none";
       }
     }
 
@@ -613,6 +718,7 @@
       navigateTo(null);
     }
 
+    // --- 운동 루틴 관련 ---
     async function loadRoutines() {
       if (!currentUser) return;
 
@@ -640,7 +746,7 @@
       const reps = parseInt(document.getElementById("reps").value, 10) || 0;
       const sets = parseInt(document.getElementById("sets").value, 10) || 0;
 
-      const btnSubmit = document.getElementById("btn-submit");
+      const btnSubmit = document.getElementById("btn-routine-submit");
       btnSubmit.disabled = true;
       btnSubmit.textContent = "...";
 
@@ -662,7 +768,6 @@
 
       if (error) {
         alert("루틴 저장에 실패했습니다.");
-        console.error(error);
         return;
       }
 
@@ -681,7 +786,6 @@
 
       if (error) {
         alert("삭제에 실패했습니다.");
-        console.error(error);
         return;
       }
 
@@ -690,7 +794,7 @@
 
     function renderRoutineList(routines) {
       const container = document.getElementById("routine-list");
-      const emptyState = document.getElementById("empty-state");
+      const emptyState = document.getElementById("empty-routine-state");
       container.innerHTML = "";
 
       if (routines.length === 0) {
@@ -701,23 +805,164 @@
 
       routines.forEach(item => {
         const card = document.createElement("div");
-        card.className = "routine-item-card";
+        card.className = "custom-item-card";
         card.innerHTML = `
-          <div class="routine-info-left">
-            <div class="routine-title-row">
+          <div class="item-info-left">
+            <div class="item-title-row">
               <span class="badge">${item.target_body}</span>
               <strong>${item.exercise_name}</strong>
             </div>
-            <div class="routine-meta-row">
+            <div class="item-meta-row">
               <span>${item.weight} kg</span> • 
               <span>${item.reps} 회</span> • 
               <span>${item.sets} 세트</span>
             </div>
           </div>
-          <button class="btn-delete" onclick="handleDeleteRoutine('${item.id}')">삭제</button>
+          <button class="btn-sm-action" onclick="handleDeleteRoutine('${item.id}')">삭제</button>
         `;
         container.appendChild(card);
       });
+    }
+
+    // --- 식약처 식품 영양 API & 칼로리 계산기 관련 ---
+    async function searchFoodNutrients() {
+      const query = document.getElementById("food-search-input").value.trim();
+      const resultsContainer = document.getElementById("food-search-results");
+      const btnSearch = document.getElementById("btn-food-search");
+
+      if (!query) {
+        alert("검색할 식품명을 입력해주세요.");
+        return;
+      }
+
+      btnSearch.disabled = true;
+      btnSearch.textContent = "...";
+      resultsContainer.innerHTML = '<div class="empty-msg">식품 영양성분 데이터를 불러오는 중...</div>';
+
+      // 식약처 FoodNtrCpntDbInfo02 엔드포인트
+      const targetApi = `https://apis.data.go.kr/1471000/FoodNtrCpntDbInfo02/getFoodNtrCpntDbInq02?serviceKey=${FOOD_API_KEY}&FOOD_NM_KR=${encodeURIComponent(query)}&pageNo=1&numOfRows=10&type=json`;
+      // 브라우저 CORS 우회용 프록시
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetApi)}`;
+
+      try {
+        const response = await fetch(proxyUrl);
+        const proxyData = await response.json();
+        const data = JSON.parse(proxyData.contents);
+
+        const items = data?.body?.items || [];
+        resultsContainer.innerHTML = "";
+
+        if (items.length === 0) {
+          resultsContainer.innerHTML = '<div class="empty-msg">검색 결과가 없습니다. 다른 검색어를 입력해보세요.</div>';
+          return;
+        }
+
+        items.forEach(food => {
+          const name = food.FOOD_NM_KR || "식품";
+          const serving = food.SERVING_SIZE || "1회제공량";
+          const kcal = parseFloat(food.AMT_NUM1) || 0;
+          const carbs = parseFloat(food.AMT_NUM6) || 0;
+          const protein = parseFloat(food.AMT_NUM3) || 0;
+          const fat = parseFloat(food.AMT_NUM4) || 0;
+
+          const foodCard = document.createElement("div");
+          foodCard.className = "custom-item-card";
+          foodCard.innerHTML = `
+            <div class="item-info-left">
+              <div class="item-title-row">
+                <strong>${name}</strong>
+                <span class="badge" style="background:#1e293b; color:#94a3b8;">${serving}</span>
+              </div>
+              <div class="item-meta-row">
+                <span>${kcal} kcal</span> • 
+                <span>탄 ${carbs}g</span> • 
+                <span>단 ${protein}g</span> • 
+                <span>지 ${fat}g</span>
+              </div>
+            </div>
+            <button class="btn-sm-action btn-sm-add" onclick='addDietItem(${JSON.stringify({ name, kcal, carbs, protein, fat })})'>+ 추가</button>
+          `;
+          resultsContainer.appendChild(foodCard);
+        });
+      } catch (err) {
+        console.error("API 연동 에러:", err);
+        resultsContainer.innerHTML = '<div class="empty-msg">데이터 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.</div>';
+      } finally {
+        btnSearch.disabled = false;
+        btnSearch.textContent = "검색";
+      }
+    }
+
+    function addDietItem(item) {
+      dailyDietItems.unshift({ ...item, id: Date.now() });
+      saveDietToLocal();
+      renderDietList();
+    }
+
+    function deleteDietItem(id) {
+      dailyDietItems = dailyDietItems.filter(item => item.id !== id);
+      saveDietToLocal();
+      renderDietList();
+    }
+
+    function saveDietToLocal() {
+      if (currentUser) {
+        localStorage.setItem(`mht_diet_${currentUser.id}`, JSON.stringify(dailyDietItems));
+      }
+    }
+
+    function loadSavedDiet() {
+      if (currentUser) {
+        const saved = localStorage.getItem(`mht_diet_${currentUser.id}`);
+        dailyDietItems = saved ? JSON.parse(saved) : [];
+      }
+      renderDietList();
+    }
+
+    function renderDietList() {
+      const container = document.getElementById("daily-diet-list");
+      const emptyState = document.getElementById("empty-diet-state");
+      container.innerHTML = "";
+
+      let totalKcal = 0;
+      let totalCarbs = 0;
+      let totalProtein = 0;
+      let totalFat = 0;
+
+      if (dailyDietItems.length === 0) {
+        emptyState.style.display = "block";
+      } else {
+        emptyState.style.display = "none";
+        dailyDietItems.forEach(item => {
+          totalKcal += item.kcal;
+          totalCarbs += item.carbs;
+          totalProtein += item.protein;
+          totalFat += item.fat;
+
+          const card = document.createElement("div");
+          card.className = "custom-item-card";
+          card.innerHTML = `
+            <div class="item-info-left">
+              <div class="item-title-row">
+                <strong>${item.name}</strong>
+              </div>
+              <div class="item-meta-row">
+                <span>${item.kcal} kcal</span> • 
+                <span>탄 ${item.carbs}g</span> • 
+                <span>단 ${item.protein}g</span> • 
+                <span>지 ${item.fat}g</span>
+              </div>
+            </div>
+            <button class="btn-sm-action" onclick="deleteDietItem(${item.id})">삭제</button>
+          `;
+          container.appendChild(card);
+        });
+      }
+
+      document.getElementById("total-kcal").textContent = `${totalKcal.toFixed(1)} kcal`;
+      document.getElementById("total-carbs").textContent = `${totalCarbs.toFixed(1)}g`;
+      document.getElementById("total-protein").textContent = `${totalProtein.toFixed(1)}g`;
+      document.getElementById("total-fat").textContent = `${totalFat.toFixed(1)}g`;
     }
 
     function renderGoogleButtons() {
