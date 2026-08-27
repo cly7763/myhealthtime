@@ -238,8 +238,8 @@
       gap: 6px;
     }
 
-    /* 루틴 폼 */
-    .routine-form {
+    /* 폼 공통 스타일 */
+    .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
@@ -247,7 +247,7 @@
       padding: 14px;
       border-radius: 10px;
       border: 1px solid #334155;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
     .form-group {
       display: flex;
@@ -290,6 +290,65 @@
     }
     .btn-primary:hover {
       background: #e11d48;
+    }
+
+    /* 권장 칼로리 계산기 결과 카드 */
+    .tdee-result-box {
+      background: #0b1120;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 14px;
+      display: none;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .tdee-cards-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .tdee-plan-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .tdee-plan-card:hover {
+      border-color: #38bdf8;
+    }
+    .tdee-plan-card.active {
+      border-color: #f43f5e;
+      background: rgba(244, 63, 94, 0.08);
+    }
+    .plan-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .plan-title-row strong {
+      font-size: 0.95rem;
+      color: #f8fafc;
+    }
+    .plan-kcal {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #f43f5e;
+    }
+    .plan-macro-row {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      display: flex;
+      gap: 8px;
+    }
+    .plan-macro-row span {
+      color: #cbd5e1;
+      font-weight: 600;
     }
 
     /* 리스트 및 카드 */
@@ -499,14 +558,21 @@
       .feature-grid {
         grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       }
-      .routine-form {
+      .form-grid.routine-form {
         grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
         align-items: flex-end;
+      }
+      .form-grid.tdee-form {
+        grid-template-columns: 1fr 1fr 1fr 1fr 2fr auto;
+        align-items: flex-end;
+      }
+      .tdee-cards-grid {
+        grid-template-columns: repeat(3, 1fr);
       }
       .form-group.full-width {
         grid-column: span 1;
       }
-      .routine-form .btn-primary {
+      .btn-primary {
         grid-column: span 1;
         width: auto;
       }
@@ -562,7 +628,7 @@
         <div class="feature-card" onclick="navigateTo('calorie')">
           <div>
             <h3>🥗 칼로리 & 매크로 계산기</h3>
-            <p>30만 건의 통합 식품 DB를 기반으로 음식을 검색하고 오늘 섭취한 칼로리와 탄·단·지를 계산합니다.</p>
+            <p>목표별(다이어트/유지/벌크업) 권장 칼로리를 산출하고 30만 건 DB를 통해 오늘 먹은 식단을 계산합니다.</p>
           </div>
           <div class="card-action">
             <span>식단 검색 및 계산하기</span>
@@ -591,7 +657,7 @@
       <div class="app-card">
         <h3>🏋️ 내 운동 루틴 설정</h3>
 
-        <form class="routine-form" id="routine-form" onsubmit="handleAddRoutine(event)">
+        <form class="form-grid routine-form" id="routine-form" onsubmit="handleAddRoutine(event)">
           <div class="form-group full-width">
             <label>운동 종목</label>
             <input type="text" id="exercise-name" placeholder="예: 벤치프레스" required />
@@ -634,31 +700,122 @@
         <button class="btn-back" onclick="navigateTo('dashboard')">← 대시보드로 돌아가기</button>
       </div>
 
-      <!-- 일일 영양 합계 -->
-      <div class="macro-summary">
-        <div class="macro-item">
-          <span class="macro-label">총 열량</span>
-          <span class="macro-val" id="total-kcal">0 kcal</span>
-        </div>
-        <div class="macro-item">
-          <span class="macro-label">탄수화물</span>
-          <span class="macro-val" style="color: #38bdf8;" id="total-carbs">0g</span>
-        </div>
-        <div class="macro-item">
-          <span class="macro-label">단백질</span>
-          <span class="macro-val" style="color: #4ade80;" id="total-protein">0g</span>
-        </div>
-        <div class="macro-item">
-          <span class="macro-label">지방</span>
-          <span class="macro-val" style="color: #facc15;" id="total-fat">0g</span>
+      <!-- 맞춤 권장 칼로리 계산기 (BMR & TDEE) -->
+      <div class="app-card">
+        <h3>🎯 내 맞춤 권장 칼로리 & 매크로 계산기</h3>
+        <form class="form-grid tdee-form" id="tdee-calc-form" onsubmit="handleCalculateTDEE(event)">
+          <div class="form-group">
+            <label>성별</label>
+            <select id="tdee-gender">
+              <option value="male">남성</option>
+              <option value="female">여성</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>나이 (세)</label>
+            <input type="number" id="tdee-age" placeholder="25" min="10" max="100" required />
+          </div>
+          <div class="form-group">
+            <label>신장 (cm)</label>
+            <input type="number" id="tdee-height" step="0.1" placeholder="175" required />
+          </div>
+          <div class="form-group">
+            <label>체중 (kg)</label>
+            <input type="number" id="tdee-weight" step="0.1" placeholder="70" required />
+          </div>
+          <div class="form-group full-width">
+            <label>활동량</label>
+            <select id="tdee-activity">
+              <option value="1.2">거의 운동 안 함 (좌식 생활)</option>
+              <option value="1.375">가벼운 활동 (주 1~3회 운동)</option>
+              <option value="1.55" selected>보통 활동 (주 3~5회 운동)</option>
+              <option value="1.725">많은 활동 (주 6~7회 강한 운동)</option>
+              <option value="1.9">매우 강한 활동 (선수급/육체노동)</option>
+            </select>
+          </div>
+          <button type="submit" class="btn-primary">목표 계산</button>
+        </form>
+
+        <!-- 계산 결과 목표 카드 3종 (다이어트 / 유지 / 벌크업) -->
+        <div class="tdee-result-box" id="tdee-result-box">
+          <div style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 6px;">
+            기초대사량(BMR): <span id="res-bmr" style="color:#ffffff; font-weight:700;">0</span> kcal • 활동대사량(TDEE): <span id="res-tdee" style="color:#ffffff; font-weight:700;">0</span> kcal
+          </div>
+          <div class="tdee-cards-grid">
+            <div class="tdee-plan-card" id="card-diet" onclick="selectTargetPlan('diet')">
+              <div class="plan-title-row">
+                <strong>🔥 다이어트 (감량)</strong>
+                <span class="badge" style="background:#0284c7; color:#fff;">-20%</span>
+              </div>
+              <div class="plan-kcal" id="kcal-diet">0 kcal</div>
+              <div class="plan-macro-row">
+                <span>탄 <b id="carbs-diet">0g</b></span> • 
+                <span>단 <b id="protein-diet">0g</b></span> • 
+                <span>지 <b id="fat-diet">0g</b></span>
+              </div>
+            </div>
+
+            <div class="tdee-plan-card active" id="card-maintain" onclick="selectTargetPlan('maintain')">
+              <div class="plan-title-row">
+                <strong>⚖️ 체중 유지</strong>
+                <span class="badge" style="background:#334155; color:#38bdf8;">유지</span>
+              </div>
+              <div class="plan-kcal" id="kcal-maintain">0 kcal</div>
+              <div class="plan-macro-row">
+                <span>탄 <b id="carbs-maintain">0g</b></span> • 
+                <span>단 <b id="protein-maintain">0g</b></span> • 
+                <span>지 <b id="fat-maintain">0g</b></span>
+              </div>
+            </div>
+
+            <div class="tdee-plan-card" id="card-bulk" onclick="selectTargetPlan('bulk')">
+              <div class="plan-title-row">
+                <strong>💪 벌크업 (증량)</strong>
+                <span class="badge" style="background:#e11d48; color:#fff;">+15%</span>
+              </div>
+              <div class="plan-kcal" id="kcal-bulk">0 kcal</div>
+              <div class="plan-macro-row">
+                <span>탄 <b id="carbs-bulk">0g</b></span> • 
+                <span>단 <b id="protein-bulk">0g</b></span> • 
+                <span>지 <b id="fat-bulk">0g</b></span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- 식품 검색창 -->
+      <!-- 일일 섭취량 합계 바 -->
+      <div class="macro-summary">
+        <div class="macro-item">
+          <span class="macro-label">총 섭취 열량</span>
+          <span class="macro-val" id="total-kcal">0.0 kcal</span>
+        </div>
+        <div class="macro-item">
+          <span class="macro-label">탄수화물</span>
+          <span class="macro-val" style="color: #38bdf8;" id="total-carbs">0.0g</span>
+        </div>
+        <div class="macro-item">
+          <span class="macro-label">단백질</span>
+          <span class="macro-val" style="color: #4ade80;" id="total-protein">0.0g</span>
+        </div>
+        <div class="macro-item">
+          <span class="macro-label">지방</span>
+          <span class="macro-val" style="color: #facc15;" id="total-fat">0.0g</span>
+        </div>
+      </div>
+
+      <!-- 식품 실시간 자동완성 검색창 -->
       <div class="app-card">
-        <h3>🔍 식품 영양성분 검색 (통합 DB)</h3>
+        <h3>🔍 식품 영양성분 실시간 검색 (통합 DB)</h3>
         <div class="search-box">
-          <input type="text" id="food-search-input" class="search-input" placeholder="식품명 입력 (예: 바나나, 닭가슴살, 햇반, 신라면, 계란)" onkeyup="if(window.event.keyCode==13){searchFoodNutrients(1)}" />
+          <input 
+            type="text" 
+            id="food-search-input" 
+            class="search-input" 
+            placeholder="식품명 타이핑 시 실시간 검색 (예: 바나나, 닭가슴살, 햇반)" 
+            oninput="handleSearchInputDebounced()" 
+            onkeyup="if(window.event.keyCode==13){searchFoodNutrients(1)}" 
+          />
           <button class="btn-primary" style="padding: 0 16px;" id="btn-food-search" onclick="searchFoodNutrients(1)">검색</button>
         </div>
 
@@ -671,7 +828,7 @@
         </div>
       </div>
 
-      <!-- 식단 목록 -->
+      <!-- 오늘 먹은 식단 목록 -->
       <div class="app-card">
         <h3>🍽️ 오늘 먹은 식단 목록</h3>
         <div class="list-wrapper" id="daily-diet-list"></div>
@@ -697,6 +854,14 @@
     let currentSearchQuery = "";
     let totalSearchCount = 0;
     const PAGE_SIZE = 10;
+    let searchDebounceTimer = null;
+
+    let calculatedPlans = {
+      diet: { kcal: 0, carbs: 0, protein: 0, fat: 0 },
+      maintain: { kcal: 0, carbs: 0, protein: 0, fat: 0 },
+      bulk: { kcal: 0, carbs: 0, protein: 0, fat: 0 }
+    };
+    let currentSelectedPlan = 'maintain';
 
     function parseJwt(token) {
       try {
@@ -732,6 +897,7 @@
       } else if (view === "calorie") {
         document.getElementById("calorie-section").style.display = "block";
         loadSavedDiet();
+        loadSavedTDEE();
       } else {
         document.getElementById("dashboard-section").style.display = "block";
       }
@@ -881,45 +1047,176 @@
       });
     }
 
-    // --- Supabase DB 기반 식품 영양 검색 및 페이지네이션 ---
+    // --- BMR / TDEE 권장 칼로리 계산기 로직 ---
+    function handleCalculateTDEE(e) {
+      e.preventDefault();
+      const gender = document.getElementById("tdee-gender").value;
+      const age = parseInt(document.getElementById("tdee-age").value, 10);
+      const height = parseFloat(document.getElementById("tdee-height").value);
+      const weight = parseFloat(document.getElementById("tdee-weight").value);
+      const activity = parseFloat(document.getElementById("tdee-activity").value);
+
+      if (!age || !height || !weight) {
+        alert("모든 신체 정보를 올바르게 입력해주세요.");
+        return;
+      }
+
+      // 미플린-세인트 지어(Mifflin-St Jeor) 공식
+      let bmr = (10 * weight) + (6.25 * height) - (5 * age);
+      if (gender === 'male') {
+        bmr += 5;
+      } else {
+        bmr -= 161;
+      }
+
+      const tdee = Math.round(bmr * activity);
+      const dietKcal = Math.round(tdee * 0.80); // 감량: -20%
+      const maintainKcal = tdee;              // 유지
+      const bulkKcal = Math.round(tdee * 1.15); // 증량: +15%
+
+      // 매크로(탄/단/지) 계산 (단백질: 체중kg당 1.8~2.0g 권장)
+      function calcMacros(targetKcal, proteinPerKg, fatPercent) {
+        const pGrams = Math.round(weight * proteinPerKg);
+        const pKcal = pGrams * 4;
+        const fKcal = targetKcal * fatPercent;
+        const fGrams = Math.round(fKcal / 9);
+        const cKcal = targetKcal - pKcal - fKcal;
+        const cGrams = Math.max(0, Math.round(cKcal / 4));
+        return { kcal: targetKcal, carbs: cGrams, protein: pGrams, fat: fGrams };
+      }
+
+      calculatedPlans.diet = calcMacros(dietKcal, 2.0, 0.20);
+      calculatedPlans.maintain = calcMacros(maintainKcal, 1.8, 0.25);
+      calculatedPlans.bulk = calcMacros(bulkKcal, 1.8, 0.25);
+
+      // UI 렌더링
+      document.getElementById("res-bmr").textContent = Math.round(bmr).toLocaleString();
+      document.getElementById("res-tdee").textContent = tdee.toLocaleString();
+
+      document.getElementById("kcal-diet").textContent = `${calculatedPlans.diet.kcal.toLocaleString()} kcal`;
+      document.getElementById("carbs-diet").textContent = `${calculatedPlans.diet.carbs}g`;
+      document.getElementById("protein-diet").textContent = `${calculatedPlans.diet.protein}g`;
+      document.getElementById("fat-diet").textContent = `${calculatedPlans.diet.fat}g`;
+
+      document.getElementById("kcal-maintain").textContent = `${calculatedPlans.maintain.kcal.toLocaleString()} kcal`;
+      document.getElementById("carbs-maintain").textContent = `${calculatedPlans.maintain.carbs}g`;
+      document.getElementById("protein-maintain").textContent = `${calculatedPlans.maintain.protein}g`;
+      document.getElementById("fat-maintain").textContent = `${calculatedPlans.maintain.fat}g`;
+
+      document.getElementById("kcal-bulk").textContent = `${calculatedPlans.bulk.kcal.toLocaleString()} kcal`;
+      document.getElementById("carbs-bulk").textContent = `${calculatedPlans.bulk.carbs}g`;
+      document.getElementById("protein-bulk").textContent = `${calculatedPlans.bulk.protein}g`;
+      document.getElementById("fat-bulk").textContent = `${calculatedPlans.bulk.fat}g`;
+
+      document.getElementById("tdee-result-box").style.display = "block";
+
+      // 로컬 스토리지에 유저 신체 정보 저장
+      if (currentUser) {
+        const tdeeData = { gender, age, height, weight, activity, currentSelectedPlan };
+        localStorage.setItem(`mht_tdee_${currentUser.id}`, JSON.stringify(tdeeData));
+      }
+    }
+
+    function selectTargetPlan(planType) {
+      currentSelectedPlan = planType;
+      ['diet', 'maintain', 'bulk'].forEach(p => {
+        const card = document.getElementById(`card-${p}`);
+        if (card) {
+          if (p === planType) card.classList.add('active');
+          else card.classList.remove('active');
+        }
+      });
+      if (currentUser) {
+        const saved = localStorage.getItem(`mht_tdee_${currentUser.id}`);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          parsed.currentSelectedPlan = planType;
+          localStorage.setItem(`mht_tdee_${currentUser.id}`, JSON.stringify(parsed));
+        }
+      }
+    }
+
+    function loadSavedTDEE() {
+      if (!currentUser) return;
+      const saved = localStorage.getItem(`mht_tdee_${currentUser.id}`);
+      if (saved) {
+        const d = JSON.parse(saved);
+        document.getElementById("tdee-gender").value = d.gender || 'male';
+        document.getElementById("tdee-age").value = d.age || '';
+        document.getElementById("tdee-height").value = d.height || '';
+        document.getElementById("tdee-weight").value = d.weight || '';
+        document.getElementById("tdee-activity").value = d.activity || '1.55';
+        if (d.age && d.height && d.weight) {
+          handleCalculateTDEE(new Event('submit'));
+          if (d.currentSelectedPlan) selectTargetPlan(d.currentSelectedPlan);
+        }
+      }
+    }
+
+    // --- 실시간 타이핑 디바운싱 검색 ---
+    function handleSearchInputDebounced() {
+      clearTimeout(searchDebounceTimer);
+      const query = document.getElementById("food-search-input").value.trim();
+      
+      if (!query) {
+        document.getElementById("food-search-results").innerHTML = "";
+        document.getElementById("search-pagination").style.display = "none";
+        return;
+      }
+
+      searchDebounceTimer = setTimeout(() => {
+        searchFoodNutrients(1);
+      }, 300);
+    }
+
+    // --- 정확도 우선순위 검색 (Supabase RPC 연동) ---
     async function searchFoodNutrients(page = 1) {
       const query = document.getElementById("food-search-input").value.trim();
       const resultsContainer = document.getElementById("food-search-results");
-      const btnSearch = document.getElementById("btn-food-search");
       const paginationBar = document.getElementById("search-pagination");
 
       if (!query) {
-        alert("검색할 식품명을 입력해주세요.");
+        resultsContainer.innerHTML = "";
+        paginationBar.style.display = "none";
         return;
       }
 
       currentSearchQuery = query;
       currentSearchPage = page;
+      const offset = (page - 1) * PAGE_SIZE;
 
-      btnSearch.disabled = true;
-      btnSearch.textContent = "...";
-      resultsContainer.innerHTML = '<div class="empty-msg">데이터베이스에서 식품을 검색하는 중...</div>';
+      resultsContainer.innerHTML = '<div class="empty-msg">검색 중...</div>';
       paginationBar.style.display = "none";
 
-      const from = (page - 1) * PAGE_SIZE;
-      const to = from + PAGE_SIZE - 1;
-
       try {
-        // food_name 및 maker 컬럼 대상 고속 ILIKE 검색
-        const { data, count, error } = await supabaseClient
-          .from('food_nutrition')
-          .select('*', { count: 'exact' })
-          .or(`food_name.ilike.%${query}%,maker.ilike.%${query}%`)
-          .order('id', { ascending: true })
-          .range(from, to);
+        // 1. Supabase 커스텀 정렬 RPC 함수 호출
+        let { data, error } = await supabaseClient.rpc('search_food_ranked', {
+          search_term: query,
+          page_limit: PAGE_SIZE,
+          page_offset: offset
+        });
 
-        if (error) throw error;
+        // 2. RPC 함수 미등록 시 ILIKE 쿼리로 안전 폴백
+        if (error) {
+          const from = offset;
+          const to = from + PAGE_SIZE - 1;
+          const res = await supabaseClient
+            .from('food_nutrition')
+            .select('*', { count: 'exact' })
+            .or(`food_name.ilike.%${query}%,maker.ilike.%${query}%`)
+            .range(from, to);
+          
+          if (res.error) throw res.error;
+          data = res.data;
+          totalSearchCount = res.count || 0;
+        } else {
+          totalSearchCount = data.length > 0 ? parseInt(data[0].total_count, 10) : 0;
+        }
 
-        totalSearchCount = count || 0;
         resultsContainer.innerHTML = "";
 
         if (!data || data.length === 0) {
-          resultsContainer.innerHTML = `<div class="empty-msg">${page > 1 ? '더 이상 검색 결과가 없습니다.' : '검색 결과가 없습니다. 다른 검색어를 입력해보세요.'}</div>`;
+          resultsContainer.innerHTML = `<div class="empty-msg">${page > 1 ? '더 이상 검색 결과가 없습니다.' : '검색 결과가 없습니다.'}</div>`;
           return;
         }
 
@@ -957,19 +1254,20 @@
           resultsContainer.appendChild(foodCard);
         });
 
-        // 페이지네이션 바 갱신
+        // 페이지네이션 바 상태 갱신
         const totalPages = Math.ceil(totalSearchCount / PAGE_SIZE) || 1;
-        paginationBar.style.display = "flex";
-        document.getElementById("btn-prev-page").disabled = (currentSearchPage <= 1);
-        document.getElementById("btn-next-page").disabled = (currentSearchPage >= totalPages || data.length < PAGE_SIZE);
-        document.getElementById("current-page-text").textContent = `${currentSearchPage} / ${totalPages} 페이지 (총 ${totalSearchCount.toLocaleString()}건)`;
+        if (totalPages > 1) {
+          paginationBar.style.display = "flex";
+          document.getElementById("btn-prev-page").disabled = (currentSearchPage <= 1);
+          document.getElementById("btn-next-page").disabled = (currentSearchPage >= totalPages || data.length < PAGE_SIZE);
+          document.getElementById("current-page-text").textContent = `${currentSearchPage} / ${totalPages} 페이지 (총 ${totalSearchCount.toLocaleString()}건)`;
+        } else {
+          paginationBar.style.display = "none";
+        }
 
       } catch (err) {
-        console.error("Supabase 검색 에러:", err);
-        resultsContainer.innerHTML = '<div class="empty-msg">데이터베이스 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.</div>';
-      } finally {
-        btnSearch.disabled = false;
-        btnSearch.textContent = "검색";
+        console.error("검색 실패:", err);
+        resultsContainer.innerHTML = '<div class="empty-msg">데이터 조회 중 오류가 발생했습니다.</div>';
       }
     }
 
